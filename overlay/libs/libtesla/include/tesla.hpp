@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <dirent.h>
 #include <strings.h>
 #include <math.h>
 
@@ -923,6 +924,12 @@ namespace tsl {
             bool m_hasLocalFont = false;
             bool m_hasCustomFont = false;
 
+        public:
+            /// Result of loading the custom SD font, for on-screen diagnostics
+            static inline std::string s_customFontStatus = "Font: not loaded";
+
+        private:
+
             /**
              * @brief Pick the font used to render a codepoint.
              * Order: Nintendo ext icons, system font, custom SD font (for glyphs the system fonts lack)
@@ -942,30 +949,63 @@ namespace tsl {
             /**
              * @brief Load a TTF from the SD card as fallback font (e.g. for Vietnamese diacritics)
              */
-            void loadCustomFont(const char* path) {
+            void loadCustomFont(const char* dirPath) {
                 static u8* customFontBuffer = nullptr;
                 if (customFontBuffer != nullptr)
                     return;
 
                 hlp::doWithSDCardHandle([&] {
-                    FILE* file = fopen(path, "rb");
-                    if (file == nullptr)
+                    // Use the first *.ttf found in the folder, so the exact file name doesn't matter
+                    DIR* dir = opendir(dirPath);
+                    if (dir == nullptr) {
+                        s_customFontStatus = std::string("Font: no folder ") + dirPath;
                         return;
+                    }
+
+                    std::string fontPath, seenFiles;
+                    while (struct dirent* entry = readdir(dir)) {
+                        std::string name = entry->d_name;
+                        if (name.size() > 4 && strcasecmp(name.c_str() + name.size() - 4, ".ttf") == 0) {
+                            fontPath = std::string(dirPath) + "/" + name;
+                            break;
+                        }
+                        if (!seenFiles.empty()) seenFiles += ", ";
+                        seenFiles += name;
+                    }
+                    closedir(dir);
+
+                    if (fontPath.empty()) {
+                        s_customFontStatus = "Font: no .ttf, found: " + (seenFiles.empty() ? std::string("(empty)") : seenFiles);
+                        return;
+                    }
+
+                    FILE* file = fopen(fontPath.c_str(), "rb");
+                    if (file == nullptr) {
+                        s_customFontStatus = "Font: cannot open " + fontPath;
+                        return;
+                    }
 
                     fseek(file, 0, SEEK_END);
                     long size = ftell(file);
                     fseek(file, 0, SEEK_SET);
 
-                    if (size > 0) {
-                        customFontBuffer = static_cast<u8*>(malloc(size));
-                        if (customFontBuffer != nullptr && fread(customFontBuffer, 1, size, file) == static_cast<size_t>(size)) {
-                            this->m_hasCustomFont = stbtt_InitFont(&this->m_customFont, customFontBuffer,
-                                                                   stbtt_GetFontOffsetForIndex(customFontBuffer, 0)) != 0;
-                        }
-                        if (!this->m_hasCustomFont && customFontBuffer != nullptr) {
-                            free(customFontBuffer);
-                            customFontBuffer = nullptr;
-                        }
+                    if (size <= 0) {
+                        s_customFontStatus = "Font: empty file";
+                    } else if ((customFontBuffer = static_cast<u8*>(malloc(size))) == nullptr) {
+                        s_customFontStatus = "Font: out of memory (" + std::to_string(size / 1024) + " KB)";
+                    } else if (fread(customFontBuffer, 1, size, file) != static_cast<size_t>(size)) {
+                        s_customFontStatus = "Font: read failed";
+                    } else if (stbtt_InitFont(&this->m_customFont, customFontBuffer,
+                                              stbtt_GetFontOffsetForIndex(customFontBuffer, 0)) == 0) {
+                        s_customFontStatus = "Font: invalid TTF";
+                    } else {
+                        this->m_hasCustomFont = true;
+                        s_customFontStatus = "Font: OK (" + std::to_string(size / 1024) + " KB)";
+                    }
+
+                    if (!this->m_hasCustomFont && customFontBuffer != nullptr) {
+                        free(customFontBuffer);
+                        customFontBuffer = nullptr;
                     }
                     fclose(file);
                 });
@@ -1175,7 +1215,7 @@ namespace tsl {
                 stbtt_InitFont(&this->m_extFont, fontBuffer, stbtt_GetFontOffsetForIndex(fontBuffer, 0));
 
                 // Optional fallback font from SD card for glyphs missing in the system fonts
-                this->loadCustomFont("sdmc:/config/translate/font.ttf");
+                this->loadCustomFont("sdmc:/config/translate");
 
                 return 0;
             }

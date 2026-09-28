@@ -16,6 +16,7 @@ public:
             return false;
         });
         list->addItem(item);
+        list->addItem(new tsl::elm::ListItem(tsl::gfx::Renderer::s_customFontStatus));
 
         // Bảng kiểm tra font: toàn bộ chữ cái tiếng Việt kèm 5 dấu thanh
         static const char* lower[] = {
