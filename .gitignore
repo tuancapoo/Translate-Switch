@@ -1,0 +1,8 @@
+﻿build/
+*.ovl
+*.elf
+*.nacp
+*.nro
+*.ttf
+config/
+key.txt
