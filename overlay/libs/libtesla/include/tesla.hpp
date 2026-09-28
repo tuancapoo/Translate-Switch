@@ -1133,7 +1133,8 @@ namespace tsl {
                     ASSERT_FATAL(tsl::hlp::viAddToLayerStack(&this->m_layer, ViLayerStack_Arbitrary));
                     ASSERT_FATAL(tsl::hlp::viAddToLayerStack(&this->m_layer, ViLayerStack_LastFrame));
                     ASSERT_FATAL(tsl::hlp::viAddToLayerStack(&this->m_layer, ViLayerStack_Null));
-                    ASSERT_FATAL(tsl::hlp::viAddToLayerStack(&this->m_layer, ViLayerStack_ApplicationForDebug));
+                    // Not added to ApplicationForDebug: capturing that stack then yields the game without the overlay
+                    //ASSERT_FATAL(tsl::hlp::viAddToLayerStack(&this->m_layer, ViLayerStack_ApplicationForDebug));
                     ASSERT_FATAL(tsl::hlp::viAddToLayerStack(&this->m_layer, ViLayerStack_Lcd));
                     //ASSERT_FATAL(tsl::hlp::viAddToLayerStack(&this->m_layer, 8));
 
@@ -2975,6 +2976,12 @@ namespace tsl {
         virtual void exitServices() {}
 
         /**
+         * @brief Called from the input thread while the overlay is hidden (e.g. for global hotkeys)
+         * @note Runs on the background input thread every 20ms when keys are pressed. Keep it fast!
+         */
+        virtual void onHiddenInput(u64 keysDown, u64 keysHeld) {}
+
+        /**
          * @brief Called before overlay changes from invisible to visible state
          *
          */
@@ -3524,6 +3531,9 @@ namespace tsl {
                         }
                         else
                             eventFire(&shData->comboEvent);
+                    } else if (!shData->overlayOpen && shData->keysDown != 0) {
+                        if (auto overlay = tsl::Overlay::get(); overlay != nullptr)
+                            overlay->onHiddenInput(shData->keysDown, shData->keysHeld);
                     }
 
                     shData->keysDownPending |= shData->keysDown;

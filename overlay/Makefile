@@ -38,13 +38,13 @@ include $(DEVKITPRO)/libnx/switch_rules
 #   NACP building is skipped as well.
 #---------------------------------------------------------------------------------
 APP_TITLE   := Translate
-APP_VERSION := 0.1
+APP_VERSION := 0.3
 
-TARGET		:=	$(notdir $(CURDIR))
+TARGET		:=	translate
 BUILD		:=	build
-SOURCES		:=	source
+SOURCES		:=	source source/core source/app source/gui
 DATA		:=	data
-INCLUDES	:=	include libs/libtesla/include
+INCLUDES	:=	include source libs/libtesla/include
 
 NO_ICON		:=  1
 
@@ -56,7 +56,7 @@ ARCH	:=	-march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 CFLAGS	:=	-g -Wall -O2 -ffunction-sections \
 			$(ARCH) $(DEFINES)
 
-CFLAGS	+=	$(INCLUDE) -D__SWITCH__
+CFLAGS	+=	$(INCLUDE) -D__SWITCH__ -DAPP_VERSION_STR=\"$(APP_VERSION)\"
 
 CXXFLAGS	:= $(CFLAGS) -fno-exceptions -std=c++20
 
