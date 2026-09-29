@@ -4,5 +4,9 @@
   publish = "public"
   command = "npm run typecheck"
 
+[build.environment]
+  # Tên model và timeout không phải bí mật; key thật (APP_TOKEN, *_API_KEY, ROUTER_BASE_URL) vẫn được quét
+  SECRETS_SCAN_OMIT_KEYS = "GEMINI_MODEL_PRIMARY,GEMINI_MODEL_FALLBACK,ROUTER_MODEL,PROVIDER_TIMEOUT_MS,TOTAL_TIMEOUT_MS"
+
 [functions]
   node_bundler = "esbuild"
