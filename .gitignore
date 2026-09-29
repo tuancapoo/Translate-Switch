@@ -6,3 +6,8 @@
 *.ttf
 config/
 key.txt
+
+# backend
+node_modules/
+.netlify/
+.env

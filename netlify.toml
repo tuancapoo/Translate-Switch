@@ -1,0 +1,8 @@
+# Netlify deploy cho backend (thư mục backend/)
+[build]
+  base    = "backend"
+  publish = "public"
+  command = "npm run typecheck"
+
+[functions]
+  node_bundler = "esbuild"
