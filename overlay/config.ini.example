@@ -1,0 +1,11 @@
+# Chép file này lên thẻ SD thành: /config/translate/config.ini
+# (file thật chứa token, KHÔNG commit lên git)
+
+# Endpoint backend
+url=https://translate-nx.netlify.app/api/translate
+
+# Phải trùng với APP_TOKEN cấu hình trên Netlify
+token=
+
+# Ngôn ngữ đích (gửi lên server qua header x-target-lang)
+lang=Vietnamese

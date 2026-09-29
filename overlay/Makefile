@@ -38,7 +38,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 #   NACP building is skipped as well.
 #---------------------------------------------------------------------------------
 APP_TITLE   := Translate
-APP_VERSION := 0.3
+APP_VERSION := 0.4
 
 TARGET		:=	translate
 BUILD		:=	build
@@ -63,7 +63,8 @@ CXXFLAGS	:= $(CFLAGS) -fno-exceptions -std=c++20
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lnx
+# curl của devkitPro dùng TLS của hệ thống (backend libnx), không cần mbedtls
+LIBS	:= -ljansson -lcurl -lz -lnx
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

@@ -11,5 +11,7 @@ public:
 
 private:
     tsl::elm::ListItem* m_statusItem = nullptr;
+    tsl::elm::ListItem* m_resultsItem = nullptr;
     u32 m_shownStatusVersion = 0;
+    u32 m_shownTranslationVersion = 0;
 };

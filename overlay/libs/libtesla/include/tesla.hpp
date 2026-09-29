@@ -884,6 +884,16 @@ namespace tsl {
                 return string;
             }
 
+            /**
+             * @brief Measure a string without drawing it (usable outside of draw calls, e.g. for text wrapping)
+             * @note Fonts must already be initialized, which is the case once the first Gui is created
+             *
+             * @return Width and height in pixels
+             */
+            static std::pair<u32, u32> measureString(const char* string, bool monospace, float fontSize) {
+                return get().drawString(string, monospace, 0, 0, fontSize, style::color::ColorTransparent);
+            }
+
         private:
             Renderer() {}
 

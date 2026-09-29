@@ -2,28 +2,31 @@
 #define TESLA_INIT_IMPL
 #include <tesla.hpp>
 
-#include "app/capture_service.hpp"
+#include "app/translate_service.hpp"
 #include "config.hpp"
 #include "core/capture.hpp"
+#include "core/http.hpp"
 #include "gui/main_gui.hpp"
 
 class TranslateOverlay : public tsl::Overlay {
 public:
     void initServices() override {
         capture::init();
-        capture_service::start();
+        http::init();
+        translate_service::start();
     }
 
     void exitServices() override {
-        capture_service::stop();
+        translate_service::stop();
+        http::exit();
         capture::exit();
     }
 
-    // Phím tắt chụp khi overlay đang ẩn
+    // Phím tắt chụp & dịch khi overlay đang ẩn
     void onHiddenInput(u64 keysDown, u64 keysHeld) override {
         constexpr u64 combo = config::CaptureHotkey;
         if ((keysHeld & combo) == combo && (keysDown & combo))
-            capture_service::request();
+            translate_service::request();
     }
 
     std::unique_ptr<tsl::Gui> loadInitialGui() override {

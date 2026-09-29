@@ -35,7 +35,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       {
         name: "router",
         type: "openai-compatible",
-        priority: 1,
+        priority: 2,
         baseUrl: env.ROUTER_BASE_URL,
         apiKey: env.ROUTER_API_KEY,
         model: env.ROUTER_MODEL,
@@ -43,7 +43,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       {
         name: "gemini-primary",
         type: "gemini",
-        priority: 2,
+        priority: 1,
         apiKey: env.GEMINI_API_KEY,
         model: env.GEMINI_MODEL_PRIMARY ?? "gemini-3.5-flash-lite",
       },
