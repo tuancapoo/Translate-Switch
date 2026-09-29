@@ -2,6 +2,7 @@
 
 #include <tesla.hpp>
 #include <cstdio>
+#include <vector>
 
 namespace settings {
 
@@ -15,6 +16,38 @@ namespace settings {
             return s.substr(start, s.find_last_not_of(spaces) - start + 1);
         }
 
+        /// Đọc toàn bộ các dòng của file (false nếu không mở được). Giả định SD đã được mount.
+        bool readLines(const char* path, std::vector<std::string>& lines) {
+            FILE* file = fopen(path, "r");
+            if (file == nullptr)
+                return false;
+
+            char buffer[512];
+            while (fgets(buffer, sizeof(buffer), file) != nullptr) {
+                std::string line = buffer;
+                while (!line.empty() && (line.back() == '\n' || line.back() == '\r'))
+                    line.pop_back();
+                lines.push_back(std::move(line));
+            }
+            fclose(file);
+            return true;
+        }
+
+        /// Tách "key=value", bỏ qua dòng trống / comment / [section]
+        bool parseLine(const std::string& raw, std::string& key, std::string& value) {
+            std::string line = trim(raw);
+            if (line.empty() || line[0] == '#' || line[0] == ';' || line[0] == '[')
+                return false;
+
+            size_t eq = line.find('=');
+            if (eq == std::string::npos)
+                return false;
+
+            key = trim(line.substr(0, eq));
+            value = trim(line.substr(eq + 1));
+            return true;
+        }
+
     }
 
     std::string load(const char* path, Settings& out) {
@@ -22,23 +55,13 @@ namespace settings {
         Settings result;
 
         tsl::hlp::doWithSDCardHandle([&] {
-            FILE* file = fopen(path, "r");
-            if (file == nullptr)
-                return;
-            found = true;
+            std::vector<std::string> lines;
+            found = readLines(path, lines);
 
-            char buffer[512];
-            while (fgets(buffer, sizeof(buffer), file) != nullptr) {
-                std::string line = trim(buffer);
-                if (line.empty() || line[0] == '#' || line[0] == ';' || line[0] == '[')
+            for (const auto& line : lines) {
+                std::string key, value;
+                if (!parseLine(line, key, value))
                     continue;
-
-                size_t eq = line.find('=');
-                if (eq == std::string::npos)
-                    continue;
-
-                std::string key = trim(line.substr(0, eq));
-                std::string value = trim(line.substr(eq + 1));
                 if (key == "url")
                     result.url = value;
                 else if (key == "token")
@@ -46,7 +69,6 @@ namespace settings {
                 else if (key == "lang" && !value.empty())
                     result.lang = value;
             }
-            fclose(file);
         });
 
         if (!found)
@@ -58,6 +80,48 @@ namespace settings {
 
         out = result;
         return "";
+    }
+
+    std::string readValue(const char* path, const std::string& wanted) {
+        std::string result;
+        tsl::hlp::doWithSDCardHandle([&] {
+            std::vector<std::string> lines;
+            readLines(path, lines);
+            for (const auto& line : lines) {
+                std::string key, value;
+                if (parseLine(line, key, value) && key == wanted)
+                    result = value;
+            }
+        });
+        return result;
+    }
+
+    bool writeValue(const char* path, const std::string& wanted, const std::string& newValue) {
+        bool ok = false;
+        tsl::hlp::doWithSDCardHandle([&] {
+            std::vector<std::string> lines;
+            readLines(path, lines);
+
+            bool replaced = false;
+            for (auto& line : lines) {
+                std::string key, value;
+                if (parseLine(line, key, value) && key == wanted) {
+                    line = wanted + "=" + newValue;
+                    replaced = true;
+                }
+            }
+            if (!replaced)
+                lines.push_back(wanted + "=" + newValue);
+
+            FILE* file = fopen(path, "w");
+            if (file == nullptr)
+                return;
+            ok = true;
+            for (const auto& line : lines)
+                ok &= fprintf(file, "%s\n", line.c_str()) >= 0;
+            fclose(file);
+        });
+        return ok;
     }
 
 }

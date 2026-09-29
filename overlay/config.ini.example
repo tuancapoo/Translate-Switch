@@ -9,3 +9,7 @@ token=
 
 # Ngôn ngữ đích (gửi lên server qua header x-target-lang)
 lang=Vietnamese
+
+# Phím tắt chụp & dịch (2-4 nút). Đổi được ngay trong overlay: Cài đặt > Phím tắt.
+# Tên nút: L R ZL ZR SL SR A B X Y DUP DDOWN DLEFT DRIGHT LS RS PLUS MINUS
+hotkey=L+R+ZR

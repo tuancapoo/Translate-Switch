@@ -38,7 +38,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 #   NACP building is skipped as well.
 #---------------------------------------------------------------------------------
 APP_TITLE   := Translate
-APP_VERSION := 0.4
+APP_VERSION := 0.5
 
 TARGET		:=	translate
 BUILD		:=	build

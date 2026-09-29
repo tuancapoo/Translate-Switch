@@ -29,4 +29,7 @@ namespace translate_service {
     /// Tăng mỗi khi có bản dịch mới
     u32 translationVersion();
 
+    /// true (một lần) khi vừa có bản dịch mới cần hiện box lên màn hình
+    bool takeShowRequest();
+
 }

@@ -32,6 +32,7 @@ namespace translate_service {
         translate_client::Translation s_translation;
         std::atomic<u32> s_statusVersion = 0;
         std::atomic<u32> s_translationVersion = 0;
+        std::atomic<bool> s_showRequested = false;
 
         void setStatus(std::string text) {
             {
@@ -80,12 +81,19 @@ namespace translate_service {
             if (!result.provider.empty())
                 summary += " · " + result.provider;
 
+            bool hasLines = !result.lines.empty();
             {
                 std::scoped_lock lock(s_mutex);
                 s_translation = std::move(result);
             }
             s_translationVersion++;
             setStatus(summary);
+
+            // Tự bật overlay để hiện box bản dịch lên màn hình
+            if (hasLines) {
+                s_showRequested = true;
+                tsl::Overlay::requestShow();
+            }
         }
 
         void runDiagnose() {
@@ -171,6 +179,10 @@ namespace translate_service {
 
     u32 translationVersion() {
         return s_translationVersion;
+    }
+
+    bool takeShowRequest() {
+        return s_showRequested.exchange(false);
     }
 
 }

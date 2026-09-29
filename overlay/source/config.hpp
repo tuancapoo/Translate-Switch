@@ -23,8 +23,7 @@ namespace config {
     // Thời gian tối đa chờ server dịch (giây)
     constexpr long TranslateTimeoutSec = 30;
 
-    // Tổ hợp phím chụp khi overlay đang ẩn (trong lúc chơi game)
-    constexpr u64 CaptureHotkey = HidNpadButton_L | HidNpadButton_R | HidNpadButton_A;
-    constexpr const char* CaptureHotkeyName = "L+R+ZR";
+    // Tổ hợp phím chụp & dịch mặc định khi overlay đang ẩn (đổi được trong overlay, lưu vào config.ini: hotkey=...)
+    constexpr u64 DefaultHotkey = HidNpadButton_L | HidNpadButton_R | HidNpadButton_ZR;
 
 }

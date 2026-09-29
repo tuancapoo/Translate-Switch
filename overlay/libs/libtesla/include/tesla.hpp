@@ -894,7 +894,67 @@ namespace tsl {
                 return get().drawString(string, monospace, 0, 0, fontSize, style::color::ColorTransparent);
             }
 
+            enum class Layout { Panel, Fullscreen };
+
+            /**
+             * @brief Request switching between the side panel (448x720) and a fullscreen layer.
+             * @note Applied by the main loop between two frames. Fullscreen falls back to a lower
+             *       framebuffer resolution (scaled up by the layer) when there is not enough memory.
+             */
+            static void requestLayout(Layout layout) {
+                s_pendingLayout = static_cast<s8>(layout);
+            }
+
+            static bool isFullscreen() {
+                return get().m_fullscreen;
+            }
+
+            /**
+             * @brief Apply a layout requested with \ref requestLayout. Must be called outside of startFrame/endFrame.
+             */
+            void applyPendingLayout() {
+                s8 pending = s_pendingLayout;
+                if (pending < 0 || !this->m_initialized)
+                    return;
+                s_pendingLayout = -1;
+
+                bool wantFullscreen = pending == static_cast<s8>(Layout::Fullscreen);
+                if (wantFullscreen == this->m_fullscreen)
+                    return;
+
+                if (wantFullscreen) {
+                    constexpr u16 sizes[][2] = { { 1280, 720 }, { 960, 540 }, { 640, 360 } };
+                    for (const auto& size : sizes) {
+                        if (this->recreateFramebuffer(size[0], size[1], cfg::ScreenWidth, cfg::ScreenHeight)) {
+                            this->m_fullscreen = true;
+                            return;
+                        }
+                    }
+                }
+
+                this->recreateFramebuffer(448, 720, cfg::ScreenHeight * (448.0F / 720.0F), cfg::ScreenHeight);
+                this->m_fullscreen = false;
+            }
+
         private:
+            static inline s8 s_pendingLayout = -1;
+            bool m_fullscreen = false;
+
+            bool recreateFramebuffer(u16 framebufferWidth, u16 framebufferHeight, u16 layerWidth, u16 layerHeight) {
+                framebufferClose(&this->m_framebuffer);
+
+                cfg::FramebufferWidth  = framebufferWidth;
+                cfg::FramebufferHeight = framebufferHeight;
+                cfg::LayerWidth  = layerWidth;
+                cfg::LayerHeight = layerHeight;
+                cfg::LayerPosX = 0;
+                cfg::LayerPosY = 0;
+
+                viSetLayerSize(&this->m_layer, cfg::LayerWidth, cfg::LayerHeight);
+                viSetLayerPosition(&this->m_layer, cfg::LayerPosX, cfg::LayerPosY);
+                return R_SUCCEEDED(framebufferCreate(&this->m_framebuffer, &this->m_window, framebufferWidth, framebufferHeight, PIXEL_FORMAT_RGBA_4444, 2));
+            }
+
             Renderer() {}
 
             /**
@@ -2992,6 +3052,12 @@ namespace tsl {
         virtual void onHiddenInput(u64 keysDown, u64 keysHeld) {}
 
         /**
+         * @brief Called on the main thread once the overlay finished hiding (after the fade out)
+         * @note Gui stack changes made here are applied before the overlay is shown again
+         */
+        virtual void onHidden() {}
+
+        /**
          * @brief Called before overlay changes from invisible to visible state
          *
          */
@@ -3077,6 +3143,15 @@ namespace tsl {
         }
 
         /**
+         * @brief Show the overlay as if the launch combo was pressed. Safe to call from any thread.
+         * @note Does nothing if the overlay is already visible.
+         */
+        static void requestShow() {
+            if (Event* event = s_showEvent; event != nullptr)
+                eventFire(event);
+        }
+
+        /**
          * @brief Gets the Overlay instance
          *
          * @return Overlay instance
@@ -3102,6 +3177,7 @@ namespace tsl {
         using GuiPtr = std::unique_ptr<tsl::Gui>;
         std::stack<GuiPtr, std::list<GuiPtr>> m_guiStack;
         static inline Overlay *s_overlayInstance = nullptr;
+        static inline Event *s_showEvent = nullptr;   ///< Combo event of the main loop, see requestShow
 
         bool m_fadeInAnimationPlaying = true, m_fadeOutAnimationPlaying = false;
         u8 m_animationCounter = 0;
@@ -3119,6 +3195,14 @@ namespace tsl {
          */
         void initScreen() {
             gfx::Renderer::get().init();
+        }
+
+        /**
+         * @brief Run the onHidden hook and apply any layout change it requested right away
+         */
+        void afterHidden() {
+            this->onHidden();
+            gfx::Renderer::get().applyPendingLayout();
         }
 
         /**
@@ -3178,6 +3262,7 @@ namespace tsl {
         void loop() {
             auto& renderer = gfx::Renderer::get();
 
+            renderer.applyPendingLayout();
             renderer.startFrame();
 
             this->animationLoop();
@@ -3627,6 +3712,7 @@ namespace tsl {
         threadStart(&backgroundThread);
 
         eventCreate(&shData.comboEvent, false);
+        tsl::Overlay::s_showEvent = &shData.comboEvent;
 
         auto& overlay = tsl::Overlay::s_overlayInstance;
         overlay = new TOverlay();
@@ -3677,6 +3763,7 @@ namespace tsl {
                     shData.running = false;
             }
 
+            overlay->afterHidden();
             overlay->clearScreen();
             overlay->resetFlags();
 
@@ -3686,6 +3773,7 @@ namespace tsl {
             eventClear(&shData.comboEvent);
         }
 
+        tsl::Overlay::s_showEvent = nullptr;
         eventClose(&shData.comboEvent);
 
         threadWaitForExit(&backgroundThread);

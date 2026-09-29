@@ -33,10 +33,23 @@ namespace translate_client {
             return value != nullptr ? value : "";
         }
 
-        /// Lấy trường "error" trong JSON lỗi của server, nếu có
+        /// Lấy trường "error" trong JSON lỗi của server, kèm lỗi của từng provider (attempts) nếu có
         std::string serverError(const std::string& body) {
             json_t* root = json_loadb(body.data(), body.size(), 0, nullptr);
-            std::string message = root != nullptr ? stringField(root, "error") : "";
+            if (root == nullptr)
+                return "";
+
+            std::string message = stringField(root, "error");
+
+            size_t index;
+            json_t* attempt;
+            json_array_foreach(json_object_get(root, "attempts"), index, attempt) {
+                std::string error = stringField(attempt, "error");
+                if (error.size() > 90)
+                    error = error.substr(0, 90) + "...";
+                message += " | " + error;
+            }
+
             json_decref(root);
             return message;
         }

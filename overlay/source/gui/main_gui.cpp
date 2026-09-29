@@ -1,7 +1,10 @@
 #include "gui/main_gui.hpp"
 
+#include "app/hotkey.hpp"
 #include "app/translate_service.hpp"
 #include "config.hpp"
+#include "gui/box_gui.hpp"
+#include "gui/hotkey_gui.hpp"
 #include "gui/result_gui.hpp"
 
 namespace {
@@ -10,13 +13,17 @@ namespace {
         return "Xem bản dịch (" + std::to_string(translate_service::translation().lines.size()) + ")";
     }
 
+    std::string hotkeyLabel() {
+        return "Phím tắt: " + hotkey::toGlyphs(hotkey::get());
+    }
+
 }
 
 tsl::elm::Element* MainGui::createUI() {
     auto frame = new tsl::elm::OverlayFrame(config::AppName, config::AppVersion);
     auto list  = new tsl::elm::List();
 
-    list->addItem(new tsl::elm::CategoryHeader(std::string("Dịch màn hình · phím tắt ") + config::CaptureHotkeyName));
+    list->addItem(new tsl::elm::CategoryHeader("Dịch màn hình"));
 
     auto translateItem = new tsl::elm::ListItem("Chụp & dịch");
     translateItem->setClickListener([](u64 keys) {
@@ -40,6 +47,28 @@ tsl::elm::Element* MainGui::createUI() {
         return true;
     });
     list->addItem(m_resultsItem);
+
+    auto boxesItem = new tsl::elm::ListItem("Hiện box trên màn hình");
+    boxesItem->setClickListener([](u64 keys) {
+        if (!(keys & HidNpadButton_A))
+            return false;
+        if (!translate_service::translation().lines.empty())
+            presentTranslationBoxes();
+        return true;
+    });
+    list->addItem(boxesItem);
+
+    list->addItem(new tsl::elm::CategoryHeader("Cài đặt"));
+
+    m_hotkeyItem = new tsl::elm::ListItem(hotkeyLabel(), "Đổi");
+    m_shownHotkey = hotkey::get();
+    m_hotkeyItem->setClickListener([](u64 keys) {
+        if (!(keys & HidNpadButton_A))
+            return false;
+        tsl::changeTo<HotkeyGui>();
+        return true;
+    });
+    list->addItem(m_hotkeyItem);
 
     list->addItem(new tsl::elm::CategoryHeader("Thông tin"));
 
@@ -81,4 +110,14 @@ void MainGui::update() {
         m_shownTranslationVersion = translationVersion;
         m_resultsItem->setText(resultsLabel());
     }
+
+    // Quay về từ màn hình đổi phím tắt
+    if (hotkey::get() != m_shownHotkey) {
+        m_shownHotkey = hotkey::get();
+        m_hotkeyItem->setText(hotkeyLabel());
+    }
+
+    // Dịch xong trong lúc đang mở menu -> chuyển thẳng sang box
+    if (translate_service::takeShowRequest())
+        presentTranslationBoxes();
 }
