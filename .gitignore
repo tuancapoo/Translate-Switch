@@ -11,3 +11,7 @@ key.txt
 node_modules/
 .netlify/
 .env
+
+# release output
+release/
+tools/release-assets/
