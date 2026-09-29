@@ -21,6 +21,14 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 - Bản dịch hiển thị **đúng vị trí** chữ gốc trên màn hình, chạm là ẩn.
 - API key nằm trên server, **không lưu trên Switch**.
 
+<p align="center">
+  <img src="docs/screenshot-translation.jpg" alt="Bản dịch hiện đè lên hộp thoại trong game" width="49%">
+  <img src="docs/screenshot-menu.jpg" alt="Menu overlay CP-Translate" width="49%">
+</p>
+<p align="center">
+  <sub>Trái: bản dịch hiện đè lên hộp thoại trong game · Phải: menu overlay với trạng thái dịch và phím tắt</sub>
+</p>
+
 ## Chức năng chính
 
 | | |
