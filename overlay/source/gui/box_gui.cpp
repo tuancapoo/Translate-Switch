@@ -1,6 +1,7 @@
 #include "gui/box_gui.hpp"
 
 #include "app/translate_service.hpp"
+#include "gui/status_indicator.hpp"
 #include "gui/text_layout.hpp"
 
 #include <algorithm>
@@ -90,6 +91,8 @@ namespace {
                     baseline += static_cast<s32>(box.fontSize);
                 }
             }
+
+            status_indicator::draw(renderer);
         }
 
         void layout(u16, u16, u16, u16) override {}

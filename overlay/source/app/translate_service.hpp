@@ -32,4 +32,10 @@ namespace translate_service {
     /// true (một lần) khi vừa có bản dịch mới cần hiện box lên màn hình
     bool takeShowRequest();
 
+    /// Tiến trình lần chụp & dịch gần nhất, cho ô vuông báo trạng thái
+    enum class Phase { Idle, Working, Done, Failed };
+    Phase phase();
+    /// armGetSystemTick() lúc phase đổi sang Done/Failed
+    u64 phaseTick();
+
 }

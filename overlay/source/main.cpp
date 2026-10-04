@@ -9,6 +9,7 @@
 #include "core/http.hpp"
 #include "gui/box_gui.hpp"
 #include "gui/main_gui.hpp"
+#include "gui/status_indicator.hpp"
 
 class TranslateOverlay : public tsl::Overlay {
 public:
@@ -42,6 +43,11 @@ public:
     void onHidden() override {
         if (BoxGui::isActive())
             tsl::goBack();
+    }
+
+    // Overlay đang ẩn (game vẫn nhận phím): chỉ vẽ ô vuông trạng thái dịch
+    bool onHiddenDraw(tsl::gfx::Renderer* renderer) override {
+        return status_indicator::draw(renderer);
     }
 
     std::unique_ptr<tsl::Gui> loadInitialGui() override {

@@ -34,6 +34,7 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 | | |
 |---|---|
 | 🎮 **Phím tắt khi đang chơi** | Mặc định `L + R + ZR`, bấm lúc overlay đang ẩn để chụp & dịch |
+| 🟨 **Ô báo trạng thái** | Ô vuông nhỏ góc trên bên trái khi dịch bằng phím tắt: vàng = đang dịch, xanh = xong, đỏ = lỗi (xem lỗi trong menu) |
 | 🖼️ **Box dịch toàn màn hình** | Box đen trong suốt ~70%, chữ trắng, tự xuống dòng và co cỡ chữ cho vừa box |
 | 👆 **Chạm để ẩn** | Chạm màn hình hoặc bấm nút bất kỳ để ẩn hết box và chơi tiếp |
 | 📜 **Xem lại bản dịch** | Danh sách bản gốc + bản dịch trong menu overlay |

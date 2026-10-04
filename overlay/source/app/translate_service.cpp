@@ -33,6 +33,14 @@ namespace translate_service {
         std::atomic<u32> s_statusVersion = 0;
         std::atomic<u32> s_translationVersion = 0;
         std::atomic<bool> s_showRequested = false;
+        std::atomic<Phase> s_phase = Phase::Idle;
+        std::atomic<u64> s_phaseTick = 0;
+
+        void setPhase(Phase phase) {
+            s_phaseTick = armGetSystemTick();
+            s_phase = phase;
+            tsl::Overlay::requestHiddenRedraw();
+        }
 
         void setStatus(std::string text) {
             {
@@ -48,13 +56,14 @@ namespace translate_service {
             return buffer;
         }
 
-        void runPipeline() {
+        /// Trả về false nếu lỗi
+        bool runPipeline() {
             // Đọc lại mỗi lần để sửa config.ini không cần khởi động lại overlay
             settings::Settings userSettings;
             std::string settingsError = settings::load(config::SettingsPath, userSettings);
             if (!settingsError.empty()) {
                 setStatus(settingsError);
-                return;
+                return false;
             }
 
             setStatus("Đang chụp...");
@@ -62,7 +71,7 @@ namespace translate_service {
             Result rc = capture::captureJpeg(frame);
             if (R_FAILED(rc)) {
                 setStatus("Lỗi chụp: " + util::resultToString(rc));
-                return;
+                return false;
             }
 
             // Lưu lại ảnh vừa chụp để debug (không bắt buộc thành công)
@@ -74,7 +83,7 @@ namespace translate_service {
             std::string error = translate_client::translate(userSettings, frame.data, frame.size, result);
             if (!error.empty()) {
                 setStatus(error);
-                return;
+                return false;
             }
 
             std::string summary = "✓ " + std::to_string(result.lines.size()) + " dòng · " + formatSeconds(startTick);
@@ -88,12 +97,14 @@ namespace translate_service {
             }
             s_translationVersion++;
             setStatus(summary);
+            setPhase(Phase::Done);
 
             // Tự bật overlay để hiện box bản dịch lên màn hình
             if (hasLines) {
                 s_showRequested = true;
                 tsl::Overlay::requestShow();
             }
+            return true;
         }
 
         void runDiagnose() {
@@ -116,10 +127,13 @@ namespace translate_service {
                 if (!s_running)
                     break;
 
-                if (s_job == Job::Diagnose)
+                if (s_job == Job::Diagnose) {
                     runDiagnose();
-                else
-                    runPipeline();
+                } else {
+                    setPhase(Phase::Working);
+                    if (!runPipeline())
+                        setPhase(Phase::Failed);
+                }
                 s_busy = false;
             }
         }
@@ -183,6 +197,14 @@ namespace translate_service {
 
     bool takeShowRequest() {
         return s_showRequested.exchange(false);
+    }
+
+    Phase phase() {
+        return s_phase;
+    }
+
+    u64 phaseTick() {
+        return s_phaseTick;
     }
 
 }

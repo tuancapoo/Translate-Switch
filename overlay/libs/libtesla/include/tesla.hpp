@@ -3070,6 +3070,14 @@ namespace tsl {
         virtual void onHide() {}
 
         /**
+         * @brief Called on the main thread while the overlay is hidden, to draw passive content (e.g. a status dot)
+         * @note Input stays with the game. The frame is cleared before this call.
+         *
+         * @return true to be called again in ~100ms, false to sleep until ef requestHiddenRedraw
+         */
+        virtual bool onHiddenDraw(gfx::Renderer *renderer) { return false; }
+
+        /**
          * @brief Loads the default Gui
          * @note This function should return the initial Gui to load using the \ref Gui::initially<T>(Args.. args) function
          *       e.g `return initially<GuiMain>();`
@@ -3152,6 +3160,14 @@ namespace tsl {
         }
 
         /**
+         * @brief Redraw the hidden overlay (see ef onHiddenDraw). Safe to call from any thread.
+         */
+        static void requestHiddenRedraw() {
+            if (Event* event = s_hiddenRedrawEvent; event != nullptr)
+                eventFire(event);
+        }
+
+        /**
          * @brief Gets the Overlay instance
          *
          * @return Overlay instance
@@ -3178,6 +3194,7 @@ namespace tsl {
         std::stack<GuiPtr, std::list<GuiPtr>> m_guiStack;
         static inline Overlay *s_overlayInstance = nullptr;
         static inline Event *s_showEvent = nullptr;   ///< Combo event of the main loop, see requestShow
+        static inline Event *s_hiddenRedrawEvent = nullptr;   ///< See requestHiddenRedraw
 
         bool m_fadeInAnimationPlaying = true, m_fadeOutAnimationPlaying = false;
         u8 m_animationCounter = 0;
@@ -3203,6 +3220,22 @@ namespace tsl {
         void afterHidden() {
             this->onHidden();
             gfx::Renderer::get().applyPendingLayout();
+        }
+
+        /**
+         * @brief Draw one frame while hidden
+         *
+         * @return Whether onHiddenDraw wants to be called again soon
+         */
+        bool drawHiddenFrame() {
+            auto& renderer = gfx::Renderer::get();
+
+            renderer.applyPendingLayout();
+            renderer.startFrame();
+            renderer.clearScreen();
+            bool again = this->onHiddenDraw(&renderer);
+            renderer.endFrame();
+            return again;
         }
 
         /**
@@ -3714,6 +3747,10 @@ namespace tsl {
         eventCreate(&shData.comboEvent, false);
         tsl::Overlay::s_showEvent = &shData.comboEvent;
 
+        Event hiddenRedrawEvent = { 0 };
+        eventCreate(&hiddenRedrawEvent, false);
+        tsl::Overlay::s_hiddenRedrawEvent = &hiddenRedrawEvent;
+
         auto& overlay = tsl::Overlay::s_overlayInstance;
         overlay = new TOverlay();
         overlay->m_closeOnExit = (u8(launchFlags) & u8(impl::LaunchFlags::CloseOnExit)) == u8(impl::LaunchFlags::CloseOnExit);
@@ -3734,7 +3771,21 @@ namespace tsl {
 
         while (shData.running) {
 
-            eventWait(&shData.comboEvent, UINT64_MAX);
+            // Hidden: keep drawing passive content (input stays with the game) until the combo fires
+            {
+                Waiter waiters[2] = { waiterForEvent(&shData.comboEvent), waiterForEvent(&hiddenRedrawEvent) };
+                bool redrawSoon = overlay->drawHiddenFrame();
+                while (true) {
+                    s32 idx = -1;
+                    Result rc = waitObjects(&idx, waiters, 2, redrawSoon ? 100'000'000ul : UINT64_MAX);
+                    if (R_SUCCEEDED(rc) && idx == 0)
+                        break;
+                    if (R_SUCCEEDED(rc))
+                        eventClear(&hiddenRedrawEvent);
+                    redrawSoon = overlay->drawHiddenFrame();
+                }
+            }
+
             eventClear(&shData.comboEvent);
             shData.overlayOpen = true;
 
@@ -3775,6 +3826,8 @@ namespace tsl {
 
         tsl::Overlay::s_showEvent = nullptr;
         eventClose(&shData.comboEvent);
+        tsl::Overlay::s_hiddenRedrawEvent = nullptr;
+        eventClose(&hiddenRedrawEvent);
 
         threadWaitForExit(&backgroundThread);
         threadClose(&backgroundThread);
