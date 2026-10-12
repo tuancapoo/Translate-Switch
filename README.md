@@ -269,6 +269,31 @@ Content-Type: image/jpeg
 
 Toạ độ tính theo pixel của ảnh gửi lên (ảnh chụp Switch là 1280x720).
 
+#### Tự chọn provider và API key theo từng request
+
+Mặc định server dùng các provider và key cấu hình trong biến môi trường. Client cũng có thể mang **key của chính mình**
+bằng cách gửi thêm header, không cần sửa cấu hình server:
+
+| Header | Mô tả |
+|---|---|
+| `x-provider` | `gemini`, `openai`, `openrouter` hoặc `openai-compatible` |
+| `x-api-key` | API key của người dùng (bắt buộc khi có `x-provider`) |
+| `x-model` | Tên model. Tuỳ chọn với `gemini` (mặc định `gemini-3.5-flash-lite`), **bắt buộc** với các provider còn lại |
+| `x-base-url` | Chỉ dùng với `openai-compatible`: URL `https` công khai của API, thường kết thúc bằng `/v1` |
+
+```http
+POST /api/translate
+x-app-token: <APP_TOKEN>
+x-provider: openrouter
+x-api-key: <key của bạn>
+x-model: google/gemini-2.5-flash
+Content-Type: image/jpeg
+```
+
+- Khi có `x-provider`, request **chỉ dùng provider đó**, không fallback sang key của server.
+- Vẫn cần `x-app-token` đúng. Key của người dùng chỉ đi qua request, không được lưu và bị che (`***`) khỏi thông báo lỗi.
+- Header sai trả `400` kèm lý do. `x-base-url` bị từ chối nếu không phải `https`, trỏ vào `localhost`, mạng nội bộ hoặc địa chỉ riêng.
+
 ### Biến môi trường
 
 | Biến | Bắt buộc | Mô tả |
