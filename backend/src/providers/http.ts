@@ -15,6 +15,8 @@ export async function postJson<T>(
       headers: { "content-type": "application/json", ...headers },
       body: JSON.stringify(body),
       signal,
+      // Không theo redirect: URL do client chọn không được chuyển hướng sang địa chỉ nội bộ
+      redirect: "error",
     });
   } catch (error) {
     const reason = signal.aborted ? "timeout" : (error as Error).message;

@@ -3,11 +3,13 @@ import { timingSafeEqual } from "node:crypto";
 import { loadConfig } from "../../src/config.ts";
 import { detectImage } from "../../src/image.ts";
 import { createProviders } from "../../src/providers/factory.ts";
+import { parseProviderOverride, redactSecret, RequestError } from "../../src/request-provider.ts";
 import { AllProvidersFailedError, FallbackTranslator } from "../../src/translator.ts";
 
 // POST /api/translate
 //   Header  x-app-token: <APP_TOKEN>     bắt buộc
 //   Header  x-target-lang: Vietnamese     tuỳ chọn
+//   Header  x-provider / x-api-key / x-model / x-base-url   tuỳ chọn: tự chọn provider (xem request-provider.ts)
 //   Body    ảnh JPEG, PNG hoặc WebP thô (Content-Type: image/jpeg | image/png | image/webp)
 // 200 →    { lines: [{ x, y, w, h, source, translation }], provider, attempts }
 
@@ -58,12 +60,27 @@ export default async (req: Request): Promise<Response> => {
 
   const targetLang = req.headers.get("x-target-lang") || "Vietnamese";
 
+  // Client có thể tự chọn provider + API key; khi đó chỉ dùng provider đó, không đụng tới key của server
+  let activeTranslator = translator;
+  const apiKey = req.headers.get("x-api-key")?.trim();
   try {
-    return json(200, await translator.translate(image, info, targetLang));
+    const override = await parseProviderOverride(req.headers);
+    if (override)
+      activeTranslator = new FallbackTranslator(createProviders([override]), appConfig);
   } catch (error) {
-    if (error instanceof AllProvidersFailedError)
-      return json(502, { error: "All providers failed", attempts: error.attempts });
-    console.error(error);
+    if (error instanceof RequestError)
+      return json(400, { error: error.message });
+    throw error;
+  }
+
+  try {
+    return json(200, await activeTranslator.translate(image, info, targetLang));
+  } catch (error) {
+    if (error instanceof AllProvidersFailedError) {
+      const attempts = error.attempts.map((a) => ({ ...a, error: a.error && redactSecret(a.error, apiKey) }));
+      return json(502, { error: "All providers failed", attempts });
+    }
+    console.error(redactSecret(String(error), apiKey));
     return json(500, { error: "Internal error" });
   }
 };
