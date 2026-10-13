@@ -1,6 +1,15 @@
 // Danh sách provider theo thứ tự ưu tiên. Không chứa secret: key/URL đọc từ biến môi trường.
 
-export type ProviderType = "openai-compatible" | "gemini";
+export type ProviderType = "openai-compatible" | "gemini" | "anthropic";
+
+/** Model mặc định khi không chỉ định (nhanh/rẻ cho việc dịch ảnh, đổi được bằng env hoặc header x-model) */
+export const DEFAULT_MODELS = {
+  gemini: "gemini-3.5-flash-lite",
+  anthropic: "claude-opus-5-5",
+  openai: "gpt-6-luna",
+} as const;
+
+export const OPENAI_BASE_URL = "https://api.openai.com/v1";
 
 export interface ProviderConfig {
   name: string;
@@ -45,7 +54,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
         type: "gemini",
         priority: 1,
         apiKey: env.GEMINI_API_KEY,
-        model: env.GEMINI_MODEL_PRIMARY ?? "gemini-3.5-flash-lite",
+        model: env.GEMINI_MODEL_PRIMARY ?? DEFAULT_MODELS.gemini,
       },
       {
         name: "gemini-fallback",
@@ -53,6 +62,22 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
         priority: 3,
         apiKey: env.GEMINI_API_KEY,
         model: env.GEMINI_MODEL_FALLBACK ?? "gemini-3-flash-preview",
+      },
+      // Provider tuỳ chọn: chỉ chạy khi có API key tương ứng, xếp sau các provider ở trên
+      {
+        name: "claude",
+        type: "anthropic",
+        priority: 4,
+        apiKey: env.ANTHROPIC_API_KEY,
+        model: env.ANTHROPIC_MODEL ?? DEFAULT_MODELS.anthropic,
+      },
+      {
+        name: "openai",
+        type: "openai-compatible",
+        priority: 5,
+        baseUrl: OPENAI_BASE_URL,
+        apiKey: env.OPENAI_API_KEY,
+        model: env.OPENAI_MODEL ?? DEFAULT_MODELS.openai,
       },
     ],
   };

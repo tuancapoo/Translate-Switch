@@ -1,4 +1,5 @@
 import type { ProviderConfig, ProviderType } from "../config.ts";
+import { AnthropicProvider } from "./anthropic.ts";
 import { GeminiProvider } from "./gemini.ts";
 import { OpenAICompatibleProvider } from "./openai-compatible.ts";
 import type { TranslationProvider } from "./types.ts";
@@ -13,6 +14,9 @@ const builders: Record<ProviderType, Builder> = {
 
   gemini: ({ name, apiKey, model }) =>
     apiKey && model ? new GeminiProvider({ name, apiKey, model }) : undefined,
+
+  anthropic: ({ name, apiKey, model }) =>
+    apiKey && model ? new AnthropicProvider({ name, apiKey, model }) : undefined,
 };
 
 /** Tạo các provider đã cấu hình đủ, sắp xếp theo priority. Provider thiếu key/model bị bỏ qua. */

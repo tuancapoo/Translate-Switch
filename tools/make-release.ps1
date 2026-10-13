@@ -31,6 +31,12 @@ url=https://<ten-site>.netlify.app/api/translate
 token=
 lang=Vietnamese
 
+# Provider và API key của riêng bạn (tuỳ chọn). Có api_key thì server dùng đúng key này.
+# Bỏ trống api_key thì server dùng cấu hình sẵn của nó. Hiện hỗ trợ provider: gemini.
+provider=gemini
+api_key=
+model=
+
 # Phím tắt chụp & dịch (2-4 nút), đổi được trong overlay: Cài đặt > Phím tắt
 # Tên nút: L R ZL ZR SL SR A B X Y DUP DDOWN DLEFT DRIGHT LS RS PLUS MINUS
 hotkey=L+R+ZR

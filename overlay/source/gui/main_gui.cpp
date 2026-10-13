@@ -3,6 +3,8 @@
 #include "app/hotkey.hpp"
 #include "app/translate_service.hpp"
 #include "config.hpp"
+#include "core/providers.hpp"
+#include "core/settings.hpp"
 #include "gui/box_gui.hpp"
 #include "gui/hotkey_gui.hpp"
 #include "gui/result_gui.hpp"
@@ -15,6 +17,18 @@ namespace {
 
     std::string hotkeyLabel() {
         return "Phím tắt: " + hotkey::toGlyphs(hotkey::get());
+    }
+
+    /// Provider và key đang dùng, đọc từ config.ini (sửa file rồi mở lại overlay để cập nhật)
+    std::string providerLabel() {
+        std::string key = settings::readValue(config::SettingsPath, "api_key");
+        if (key.empty())
+            return "Provider: key của server";
+
+        std::string provider = settings::readValue(config::SettingsPath, "provider");
+        if (provider.empty())
+            provider = "gemini";
+        return "Provider: " + provider + " · " + providers::maskKey(key);
     }
 
 }
@@ -71,6 +85,9 @@ tsl::elm::Element* MainGui::createUI() {
     list->addItem(m_hotkeyItem);
 
     list->addItem(new tsl::elm::CategoryHeader("Thông tin"));
+
+    // Đặt provider và api_key trong config.ini (xem config.ini.example)
+    list->addItem(new tsl::elm::ListItem(providerLabel()));
 
     auto diagnoseItem = new tsl::elm::ListItem("Kiểm tra mạng");
     diagnoseItem->setClickListener([](u64 keys) {

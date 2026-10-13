@@ -1,5 +1,18 @@
 import { ProviderError } from "./types.ts";
 
+/** Lấy message gọn từ thân lỗi JSON ({"error":{"message":...}}); không phải JSON thì gộp khoảng trắng */
+function summarizeError(text: string): string {
+  try {
+    const body = JSON.parse(text) as { error?: { message?: unknown } | string; message?: unknown };
+    const message = typeof body.error === "string" ? body.error : (body.error?.message ?? body.message);
+    if (typeof message === "string" && message.trim())
+      return message.trim();
+  } catch {
+    // không phải JSON
+  }
+  return text.replace(/\s+/g, " ").trim();
+}
+
 /** POST JSON, ném ProviderError kèm status khi HTTP lỗi hoặc timeout */
 export async function postJson<T>(
   provider: string,
@@ -24,7 +37,7 @@ export async function postJson<T>(
   }
 
   if (!response.ok) {
-    const detail = (await response.text().catch(() => "")).slice(0, 300);
+    const detail = summarizeError(await response.text().catch(() => "")).slice(0, 300);
     throw new ProviderError(provider, `HTTP ${response.status}: ${detail}`, response.status);
   }
 

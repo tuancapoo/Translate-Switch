@@ -1,11 +1,11 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
-import type { ProviderConfig } from "./config.ts";
+import { DEFAULT_MODELS, OPENAI_BASE_URL, type ProviderConfig } from "./config.ts";
 
 // Provider do client chọn cho từng request (thay vì cấu hình trong env):
-//   x-provider  gemini | openai | openrouter | openai-compatible
+//   x-provider  gemini | claude (anthropic) | openai (gpt) | openrouter | openai-compatible
 //   x-api-key   key của chính người dùng
-//   x-model     tuỳ chọn với gemini, bắt buộc với các provider còn lại
+//   x-model     tuỳ chọn với gemini, claude, openai (có model mặc định), bắt buộc với openrouter và openai-compatible
 //   x-base-url  chỉ dùng với openai-compatible (URL https công khai, kết thúc bằng /v1)
 
 /** Lỗi do request sai: trả về 400 kèm thông báo */
@@ -17,9 +17,16 @@ interface Preset {
   defaultModel?: string;
 }
 
+const GEMINI: Preset = { type: "gemini", defaultModel: DEFAULT_MODELS.gemini };
+const CLAUDE: Preset = { type: "anthropic", defaultModel: DEFAULT_MODELS.anthropic };
+const OPENAI: Preset = { type: "openai-compatible", baseUrl: OPENAI_BASE_URL, defaultModel: DEFAULT_MODELS.openai };
+
 const PRESETS: Record<string, Preset> = {
-  gemini: { type: "gemini", defaultModel: "gemini-3.5-flash-lite" },
-  openai: { type: "openai-compatible", baseUrl: "https://api.openai.com/v1" },
+  gemini: GEMINI,
+  claude: CLAUDE,
+  anthropic: CLAUDE,
+  openai: OPENAI,
+  gpt: OPENAI,
   openrouter: { type: "openai-compatible", baseUrl: "https://openrouter.ai/api/v1" },
   "openai-compatible": { type: "openai-compatible" },
 };

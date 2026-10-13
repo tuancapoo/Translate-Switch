@@ -22,7 +22,8 @@ namespace settings {
             if (file == nullptr)
                 return false;
 
-            char buffer[512];
+            // Đủ chỗ cho một dòng api_key dài (backend giới hạn key 512 ký tự)
+            char buffer[1024];
             while (fgets(buffer, sizeof(buffer), file) != nullptr) {
                 std::string line = buffer;
                 while (!line.empty() && (line.back() == '\n' || line.back() == '\r'))
@@ -68,6 +69,12 @@ namespace settings {
                     result.token = value;
                 else if (key == "lang" && !value.empty())
                     result.lang = value;
+                else if (key == "provider" && !value.empty())
+                    result.provider = value;
+                else if (key == "api_key")
+                    result.apiKey = value;
+                else if (key == "model")
+                    result.model = value;
             }
         });
 

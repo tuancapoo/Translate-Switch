@@ -102,9 +102,26 @@ url=https://<ten-site>.netlify.app/api/translate
 token=<APP_TOKEN của backend>
 lang=Vietnamese
 hotkey=L+R+ZR
+
+# Tuỳ chọn: dùng provider và API key của riêng bạn
+provider=gemini
+api_key=<key Gemini của bạn>
+model=
 ```
 
-> ⚠️ `config.ini` chứa token, **không chia sẻ** file này.
+| Khoá | Mô tả |
+|---|---|
+| `url`, `token` | Địa chỉ và `APP_TOKEN` của backend (bắt buộc) |
+| `lang` | Ngôn ngữ đích, mặc định `Vietnamese` |
+| `hotkey` | Phím tắt chụp & dịch, đổi được trong overlay |
+| `provider` | Provider dịch. **Hiện hỗ trợ: `gemini`** |
+| `api_key` | Key của bạn. Có key thì overlay gửi kèm request và server dùng đúng key này; **bỏ trống** thì server dùng key cấu hình sẵn của nó |
+| `model` | Tên model, bỏ trống để dùng mặc định của provider |
+
+Overlay không mở được bàn phím hệ thống, nên `provider` và `api_key` được đặt bằng cách sửa file này trên máy tính
+(rút thẻ SD ra). Trong overlay, mục **Thông tin** hiện provider và key đang dùng, key được che chỉ còn 4 ký tự cuối.
+
+> ⚠️ `config.ini` chứa token và API key, **không chia sẻ** file này. Nên dùng key riêng có hạn mức chi tiêu thấp.
 
 ### 3. Font tiếng Việt
 
@@ -241,7 +258,8 @@ backend/
 │     ├─ types.ts                    Interface TranslationProvider
 │     ├─ factory.ts                  Tạo adapter theo cấu hình
 │     ├─ gemini.ts                   Adapter Gemini
-│     ├─ openai-compatible.ts        Adapter /v1/chat/completions
+│     ├─ anthropic.ts                Adapter Claude (SDK chính thức)
+│     ├─ openai-compatible.ts        Adapter /v1/chat/completions (OpenAI, OpenRouter, router...)
 │     └─ http.ts
 └─ scripts/test-image.ts             Test nhanh trên PC
 ```
@@ -276,17 +294,25 @@ bằng cách gửi thêm header, không cần sửa cấu hình server:
 
 | Header | Mô tả |
 |---|---|
-| `x-provider` | `gemini`, `openai`, `openrouter` hoặc `openai-compatible` |
+| `x-provider` | `gemini`, `claude` (hoặc `anthropic`), `openai` (hoặc `gpt`), `openrouter`, `openai-compatible` |
 | `x-api-key` | API key của người dùng (bắt buộc khi có `x-provider`) |
-| `x-model` | Tên model. Tuỳ chọn với `gemini` (mặc định `gemini-3.5-flash-lite`), **bắt buộc** với các provider còn lại |
+| `x-model` | Tên model. Có model mặc định với `gemini` (`gemini-3.5-flash-lite`), `claude` (`claude-opus-5-5`) và `openai` (`gpt-6-luna`); **bắt buộc** với `openrouter` và `openai-compatible` |
 | `x-base-url` | Chỉ dùng với `openai-compatible`: URL `https` công khai của API, thường kết thúc bằng `/v1` |
+
+| Provider | Nhà cung cấp | Ghi chú |
+|---|---|---|
+| `gemini` | Google Gemini API | Toạ độ chữ chính xác nhất, nhanh và rẻ |
+| `claude` / `anthropic` | Anthropic (SDK chính thức) | Đổi `x-model` sang `claude-sonnet-5-5` hoặc `claude-haiku-4-5` nếu cần nhanh và rẻ hơn |
+| `openai` / `gpt` | OpenAI | Mặc định `gpt-6-luna` (model nhanh, rẻ, đọc được ảnh) |
+| `openrouter` | OpenRouter | Phải chỉ định `x-model` |
+| `openai-compatible` | Bất kỳ API chuẩn `/v1/chat/completions` | Phải chỉ định `x-model` và `x-base-url` |
 
 ```http
 POST /api/translate
 x-app-token: <APP_TOKEN>
-x-provider: openrouter
+x-provider: claude
 x-api-key: <key của bạn>
-x-model: google/gemini-2.5-flash
+x-model: claude-sonnet-5-5
 Content-Type: image/jpeg
 ```
 
@@ -303,6 +329,8 @@ Content-Type: image/jpeg
 | `GEMINI_MODEL_PRIMARY` | | Mặc định `gemini-3.5-flash-lite` |
 | `GEMINI_MODEL_FALLBACK` | | Mặc định `gemini-3-flash-preview` |
 | `ROUTER_BASE_URL` / `ROUTER_API_KEY` / `ROUTER_MODEL` | | Endpoint chuẩn OpenAI `/v1/chat/completions` |
+| `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | | Claude, chạy sau các provider trên (priority 4). Model mặc định `claude-opus-5-5` |
+| `OPENAI_API_KEY` / `OPENAI_MODEL` | | ChatGPT, priority 5. Model mặc định `gpt-6-luna` |
 | `PROVIDER_TIMEOUT_MS` | | Timeout mỗi provider, mặc định `12000` |
 | `TOTAL_TIMEOUT_MS` | | Tổng thời gian fallback, mặc định `25000` |
 

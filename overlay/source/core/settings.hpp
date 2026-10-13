@@ -7,6 +7,9 @@
 //   url=https://<site>.netlify.app/api/translate
 //   token=<APP_TOKEN của server>
 //   lang=Vietnamese
+//   provider=gemini          (tuỳ chọn) provider dịch, hiện hỗ trợ: gemini
+//   api_key=<key của bạn>    (tuỳ chọn) có key thì gửi kèm request; bỏ trống thì server dùng key của nó
+//   model=<tên model>        (tuỳ chọn) bỏ trống để dùng model mặc định của provider
 
 namespace settings {
 
@@ -14,6 +17,9 @@ namespace settings {
         std::string url;
         std::string token;
         std::string lang = "Vietnamese";
+        std::string provider = "gemini";
+        std::string apiKey;
+        std::string model;
     };
 
     /// Đọc file cấu hình. Trả về chuỗi rỗng nếu thành công, ngược lại là thông báo lỗi.

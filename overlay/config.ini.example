@@ -10,6 +10,14 @@ token=
 # Ngôn ngữ đích (gửi lên server qua header x-target-lang)
 lang=Vietnamese
 
+# Provider và API key của riêng bạn (tuỳ chọn).
+# Có api_key thì overlay gửi kèm request và server dùng đúng key này, không dùng key của server.
+# Bỏ trống api_key thì server dùng cấu hình sẵn của nó.
+# Hiện hỗ trợ provider: gemini. model bỏ trống = model mặc định của provider.
+provider=gemini
+api_key=
+model=
+
 # Phím tắt chụp & dịch (2-4 nút). Đổi được ngay trong overlay: Cài đặt > Phím tắt.
 # Tên nút: L R ZL ZR SL SR A B X Y DUP DDOWN DLEFT DRIGHT LS RS PLUS MINUS
 hotkey=L+R+ZR

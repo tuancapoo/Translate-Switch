@@ -2,6 +2,7 @@
 
 #include "config.hpp"
 #include "core/http.hpp"
+#include "core/providers.hpp"
 
 #include <jansson.h>
 
@@ -59,14 +60,27 @@ namespace translate_client {
     std::string translate(const settings::Settings& settings, const u8* jpeg, size_t size, Translation& out) {
         ensureJsonSeed();
 
-        http::Response response = http::post(
-            settings.url,
-            {
-                "Content-Type: image/jpeg",
-                "x-app-token: " + settings.token,
-                "x-target-lang: " + settings.lang,
-            },
-            jpeg, size, config::TranslateTimeoutSec);
+        std::vector<std::string> headers = {
+            "Content-Type: image/jpeg",
+            "x-app-token: " + settings.token,
+            "x-target-lang: " + settings.lang,
+        };
+
+        // Có api_key thì dùng provider + key của người dùng; không có thì server dùng cấu hình của nó
+        if (!settings.apiKey.empty()) {
+            if (!providers::isSupported(settings.provider))
+                return "provider \"" + settings.provider + "\" chưa hỗ trợ (hiện có: " + providers::supportedList() + ")";
+            std::string keyError = providers::validateKey(settings.apiKey);
+            if (!keyError.empty())
+                return keyError;
+
+            headers.push_back("x-provider: " + settings.provider);
+            headers.push_back("x-api-key: " + settings.apiKey);
+            if (!settings.model.empty())
+                headers.push_back("x-model: " + settings.model);
+        }
+
+        http::Response response = http::post(settings.url, headers, jpeg, size, config::TranslateTimeoutSec);
 
         if (!response.error.empty())
             return "Mạng: " + response.error;
