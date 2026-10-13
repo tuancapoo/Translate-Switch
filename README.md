@@ -19,7 +19,7 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 - Chạy như một **overlay Tesla/Ultrahand**: không cần thoát game, không cần PC bên cạnh.
 - **OCR + dịch trong một bước** bằng model AI có khả năng đọc ảnh (Gemini, ChatGPT/Claude qua router).
 - Bản dịch hiển thị **đúng vị trí** chữ gốc trên màn hình, chạm là ẩn.
-- API key nằm trên server, **không lưu trên Switch**.
+- Bạn dùng **provider, API key và model của chính mình** (đặt trong `config.ini`). Server chỉ chuyển tiếp, **không lưu key**.
 
 <p align="center">
   <img src="docs/screenshot-translation.jpg" alt="Bản dịch hiện đè lên hộp thoại trong game" width="49%">
@@ -39,7 +39,7 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 | 👆 **Chạm để ẩn** | Chạm màn hình hoặc bấm nút bất kỳ để ẩn hết box và chơi tiếp |
 | 📜 **Xem lại bản dịch** | Danh sách bản gốc + bản dịch trong menu overlay |
 | ⌨️ **Đổi phím tắt** | Giữ tổ hợp mới 1.5 giây ngay trong overlay, tự lưu vào `config.ini` |
-| 🔁 **Fallback nhiều AI** | Server thử lần lượt nhiều provider theo độ ưu tiên, lỗi/timeout thì chuyển provider khác |
+| 🔁 **Nhiều provider AI** | Gemini, Claude, ChatGPT, OpenRouter hoặc API chuẩn OpenAI, tuỳ key bạn có. (Tuỳ chọn cho chủ server: bật chuỗi fallback bằng key của server, xem `ALLOW_SERVER_PROVIDERS`) |
 | 🇻🇳 **Font tiếng Việt** | Nạp font TTF từ thẻ SD cho các ký tự font hệ thống thiếu (ấ, ặ, ữ, ✓...) |
 | 🩺 **Kiểm tra mạng** | Xem trạng thái Wi-Fi, IP, DNS ngay trong overlay |
 
@@ -287,15 +287,15 @@ Content-Type: image/jpeg
 
 Toạ độ tính theo pixel của ảnh gửi lên (ảnh chụp Switch là 1280x720).
 
-#### Tự chọn provider và API key theo từng request
+#### Provider, API key và model do người dùng gửi theo từng request
 
-Mặc định server dùng các provider và key cấu hình trong biến môi trường. Client cũng có thể mang **key của chính mình**
-bằng cách gửi thêm header, không cần sửa cấu hình server:
+Backend **chỉ dùng provider, API key và model mà mỗi request mang theo**, không dùng key nào của server (trừ khi chủ server
+bật `ALLOW_SERVER_PROVIDERS`, xem bên dưới). Request thiếu `x-provider` hoặc `x-api-key` sẽ nhận lỗi `400`.
 
 | Header | Mô tả |
 |---|---|
-| `x-provider` | `gemini`, `claude` (hoặc `anthropic`), `openai` (hoặc `gpt`), `openrouter`, `openai-compatible` |
-| `x-api-key` | API key của người dùng (bắt buộc khi có `x-provider`) |
+| `x-provider` | **Bắt buộc.** `gemini`, `claude` (hoặc `anthropic`), `openai` (hoặc `gpt`), `openrouter`, `openai-compatible` |
+| `x-api-key` | **Bắt buộc.** API key của người dùng |
 | `x-model` | Tên model. Có model mặc định với `gemini` (`gemini-3.5-flash-lite`), `claude` (`claude-opus-5-5`) và `openai` (`gpt-6-luna`); **bắt buộc** với `openrouter` và `openai-compatible` |
 | `x-base-url` | Chỉ dùng với `openai-compatible`: URL `https` công khai của API, thường kết thúc bằng `/v1` |
 
@@ -316,7 +316,7 @@ x-model: claude-sonnet-5-5
 Content-Type: image/jpeg
 ```
 
-- Khi có `x-provider`, request **chỉ dùng provider đó**, không fallback sang key của server.
+- Request **chỉ dùng provider đó**, không tự chuyển sang provider khác. Provider lỗi thì trả `502 {"error":"Provider request failed","detail":"..."}` kèm lý do thật (ví dụ `HTTP 503`, `timeout`, `API key not valid`).
 - Vẫn cần `x-app-token` đúng. Key của người dùng chỉ đi qua request, không được lưu và bị che (`***`) khỏi thông báo lỗi.
 - Header sai trả `400` kèm lý do. `x-base-url` bị từ chối nếu không phải `https`, trỏ vào `localhost`, mạng nội bộ hoặc địa chỉ riêng.
 
@@ -325,6 +325,7 @@ Content-Type: image/jpeg
 | Biến | Bắt buộc | Mô tả |
 |---|---|---|
 | `APP_TOKEN` | ✅ | Chuỗi bí mật, Switch gửi qua `x-app-token` |
+| `ALLOW_SERVER_PROVIDERS` | | Đặt `true` để request không có `x-provider` chạy bằng các provider cấu hình bên dưới (chuỗi fallback). Mặc định **tắt**: các biến key bên dưới sẽ không được dùng |
 | `GEMINI_API_KEY` | | Key Gemini (dùng cho priority 1 và 2) |
 | `GEMINI_MODEL_PRIMARY` | | Mặc định `gemini-3.5-flash-lite` |
 | `GEMINI_MODEL_FALLBACK` | | Mặc định `gemini-3-flash-preview` |
@@ -334,7 +335,7 @@ Content-Type: image/jpeg
 | `PROVIDER_TIMEOUT_MS` | | Timeout mỗi provider, mặc định `12000` |
 | `TOTAL_TIMEOUT_MS` | | Tổng thời gian fallback, mặc định `25000` |
 
-Provider nào thiếu key/model sẽ tự bị bỏ qua. Mẫu: [`backend/.env.example`](backend/.env.example).
+Các biến `*_API_KEY` và `*_MODEL` chỉ có tác dụng khi bật `ALLOW_SERVER_PROVIDERS=true`; provider nào thiếu key/model sẽ tự bị bỏ qua. Mẫu: [`backend/.env.example`](backend/.env.example).
 
 ### Chạy local
 
@@ -363,7 +364,7 @@ netlify dev               # http://localhost:8888/api/translate
 ## Bảo mật
 
 - **Không commit** `backend/.env` và `config.ini` (đã có trong `.gitignore`).
-- Key AI chỉ nằm trên Netlify; Switch chỉ giữ `APP_TOKEN`. Request sai token bị chặn trước khi gọi AI.
+- Mặc định server **không giữ key AI nào**: key do bạn nhập trong `config.ini` trên thẻ SD và đi kèm mỗi request qua HTTPS, server không lưu. Request sai `APP_TOKEN` bị chặn trước khi gọi AI.
 - Nếu lỡ lộ key hoặc token: tạo key mới, cập nhật Netlify và `config.ini`.
 
 ## Ghi chú

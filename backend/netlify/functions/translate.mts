@@ -7,17 +7,25 @@ import { parseProviderOverride, redactSecret, RequestError } from "../../src/req
 import { AllProvidersFailedError, FallbackTranslator } from "../../src/translator.ts";
 
 // POST /api/translate
-//   Header  x-app-token: <APP_TOKEN>     bắt buộc
+//   Header  x-app-token: <APP_TOKEN>      bắt buộc
+//   Header  x-provider: gemini | claude | openai | openrouter | openai-compatible   bắt buộc
+//   Header  x-api-key: <key của người dùng>                                          bắt buộc
+//   Header  x-model / x-base-url          tuỳ chọn (xem request-provider.ts)
 //   Header  x-target-lang: Vietnamese     tuỳ chọn
-//   Header  x-provider / x-api-key / x-model / x-base-url   tuỳ chọn: tự chọn provider (xem request-provider.ts)
 //   Body    ảnh JPEG, PNG hoặc WebP thô (Content-Type: image/jpeg | image/png | image/webp)
 // 200 →    { lines: [{ x, y, w, h, source, translation }], provider, attempts }
+//
+// Chỉ dùng provider/key/model do người dùng gửi lên. Muốn cho phép chạy bằng key cấu hình trên server
+// (khi request không có x-provider) thì đặt biến môi trường ALLOW_SERVER_PROVIDERS=true.
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
-// Tạo một lần cho mỗi instance, dùng lại giữa các request khi function còn "ấm"
 const appConfig = loadConfig();
-const translator = new FallbackTranslator(createProviders(appConfig.providers), appConfig);
+
+// Chuỗi provider của server chỉ được dựng khi bật ALLOW_SERVER_PROVIDERS
+const serverTranslator = appConfig.allowServerProviders
+  ? new FallbackTranslator(createProviders(appConfig.providers), appConfig)
+  : undefined;
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -59,25 +67,31 @@ export default async (req: Request): Promise<Response> => {
     });
 
   const targetLang = req.headers.get("x-target-lang") || "Vietnamese";
-
-  // Client có thể tự chọn provider + API key; khi đó chỉ dùng provider đó, không đụng tới key của server
-  let activeTranslator = translator;
   const apiKey = req.headers.get("x-api-key")?.trim();
+
+  // Provider do người dùng chọn (kèm API key và model của họ)
+  let override;
   try {
-    const override = await parseProviderOverride(req.headers);
-    if (override)
-      activeTranslator = new FallbackTranslator(createProviders([override]), appConfig);
+    override = await parseProviderOverride(req.headers);
   } catch (error) {
     if (error instanceof RequestError)
       return json(400, { error: error.message });
     throw error;
   }
 
+  if (!override && !serverTranslator)
+    return json(400, { error: "x-provider and x-api-key are required (server providers are disabled)" });
+
+  const translator = override ? new FallbackTranslator(createProviders([override]), appConfig) : serverTranslator!;
+
   try {
-    return json(200, await activeTranslator.translate(image, info, targetLang));
+    return json(200, await translator.translate(image, info, targetLang));
   } catch (error) {
     if (error instanceof AllProvidersFailedError) {
       const attempts = error.attempts.map((a) => ({ ...a, error: a.error && redactSecret(a.error, apiKey) }));
+      // Một provider do người dùng chọn: nói rõ nó lỗi gì thay vì "All providers failed"
+      if (override)
+        return json(502, { error: "Provider request failed", provider: override.name, detail: attempts[0]?.error, attempts });
       return json(502, { error: "All providers failed", attempts });
     }
     console.error(redactSecret(String(error), apiKey));
