@@ -122,10 +122,24 @@ model=
 | `model` | Tên model. Bỏ trống thì dùng mặc định của provider (`gemini-3.5-flash-lite`, `claude-opus-5-5`, `gpt-6-luna`). **Bắt buộc** với `openrouter` và `openai-compatible` |
 | `base_url` | Chỉ cho `openai-compatible`: URL `https` của API, thường kết thúc bằng `/v1` |
 
-Overlay không mở được bàn phím hệ thống, nên `provider` và `api_key` được đặt bằng cách sửa file này trên máy tính
-(rút thẻ SD ra). Trong overlay, mục **Thông tin** hiện provider và key đang dùng, key được che chỉ còn 4 ký tự cuối.
+`provider` và `model` chọn được ngay trong overlay (**Cài đặt → Provider / Model**), còn `api_key` thì phải sửa trong file này
+trên máy tính (rút thẻ SD ra) vì overlay không mở được bàn phím hệ thống. Mục **Thông tin** của overlay hiện key đang dùng
+(che chỉ còn 4 ký tự cuối).
 
 > ⚠️ `config.ini` chứa token và API key, **không chia sẻ** file này. Nên dùng key riêng có hạn mức chi tiêu thấp.
+
+#### Danh sách provider và model
+
+| Provider (`provider=`) | Nhà cung cấp | Model chọn sẵn trong overlay | Ghi chú |
+|---|---|---|---|
+| `gemini` | Google Gemini | `gemini-3.5-flash-lite` (mặc định), `gemini-3.1-flash-lite`, `gemini-3-flash-preview` | Có gói miễn phí. Model chọn khác mặc định mà lỗi thì tự thử lại `gemini-3.5-flash-lite` |
+| `claude` | Anthropic | `claude-opus-5-5` (mặc định, chậm), `claude-sonnet-5-5`, `claude-haiku-4-5` (nhanh) | Cần key trả phí |
+| `openai` | OpenAI (ChatGPT) | `gpt-6-luna` (mặc định) | Cần key trả phí |
+| `openrouter` | OpenRouter | không có sẵn | **Bắt buộc** đặt `model=` trong `config.ini` |
+| `openai-compatible` | API chuẩn OpenAI bất kỳ | không có sẵn | **Bắt buộc** đặt `model=` và `base_url=` trong `config.ini` |
+
+Muốn dùng model khác ngoài danh sách chọn sẵn, sửa `model=` trong `config.ini` (tên model phải đúng với nhà cung cấp, đổi provider trong
+overlay sẽ đặt lại `model`).
 
 ### 3. Font tiếng Việt
 
@@ -156,6 +170,8 @@ Font DejaVu © Bitstream, Inc. và các tác giả DejaVu, theo giấy phép đi
 | **Hiện box trên màn hình** | Hiện lại box của bản dịch gần nhất |
 | **Phím tắt** | Đổi tổ hợp phím: giữ 2-4 nút khoảng 1.5 giây để lưu, bấm riêng B để huỷ |
 | **Nền box** | Chỉnh độ trong suốt của box bản dịch: kéo thanh trượt trái/phải, có ô xem trước; thoát bằng B thì tự lưu vào `config.ini` |
+| **Provider** | Chọn provider (Gemini, Claude, ChatGPT, OpenRouter, API chuẩn OpenAI). Đổi provider sẽ đặt lại model về mặc định |
+| **Model** | Chọn model cho provider đang dùng (danh sách chọn sẵn ở trên); OpenRouter và API chuẩn OpenAI thì đặt model trong `config.ini` |
 | **Kiểm tra mạng** | Trạng thái Wi-Fi, IP và kết quả phân giải DNS tới server |
 | **Thoát overlay** | Tắt hẳn overlay, quay về menu Ultrahand |
 

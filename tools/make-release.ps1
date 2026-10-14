@@ -50,6 +50,8 @@ lang=Vietnamese
 #   openrouter         BẮT BUỘC đặt model (tên model của OpenRouter)
 #   openai-compatible  BẮT BUỘC đặt model và base_url (API chuẩn /v1/chat/completions, https công khai)
 # model bỏ trống = dùng model mặc định ở trên.
+# provider và model đổi được ngay trong overlay: Cài đặt > Provider / Model (đổi provider sẽ đặt lại model).
+# api_key thì phải sửa trong file này (overlay không có bàn phím).
 provider=gemini
 api_key=
 model=
