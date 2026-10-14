@@ -23,7 +23,7 @@ lang=Vietnamese
 # api_key thì phải sửa trong file này (overlay không có bàn phím).
 provider=gemini
 api_key=
-model=
+model=gemini-3.5-flash-lite
 # Chỉ dùng với provider=openai-compatible, ví dụ https://api.example.com/v1
 base_url=
 
