@@ -1,7 +1,16 @@
 ﻿# Tạo thư mục release/CP-Translate với cấu trúc thẻ SD, chép thẳng vào gốc thẻ SD là dùng được.
-#   powershell -ExecutionPolicy Bypass -File tools\make-release.ps1
+#   powershell -ExecutionPolicy Bypass -File tools\make-release.ps1 -Token <APP_TOKEN>
+#
+# -Url   địa chỉ backend điền sẵn vào config.ini (mặc định: site đang dùng)
+# -Token APP_TOKEN điền sẵn vào config.ini; hoặc đặt biến môi trường RELEASE_APP_TOKEN. Bỏ trống thì để trống.
+#        Token KHÔNG được ghi vào script này hay vào git: nó chỉ có trong gói zip phát hành.
 #
 # Font (tuỳ chọn): đặt DejaVuSans.ttf (+ LICENSE của DejaVu) vào tools\release-assets\ để đóng gói kèm.
+
+param(
+    [string]$Url = "https://translate-nx.netlify.app/api/translate",
+    [string]$Token = $env:RELEASE_APP_TOKEN
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -21,18 +30,19 @@ $dataDir  = New-Item -ItemType Directory -Force (Join-Path $out "config\translat
 
 Copy-Item $ovl $overlays
 
-# config.ini mẫu: không chứa token thật
+# config.ini: url và token được điền sẵn nếu truyền vào; người dùng chỉ cần điền api_key
 $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+if (-not $Token) { Write-Warning "Không có -Token: config.ini trong gói sẽ để trống token" }
 [IO.File]::WriteAllText((Join-Path $dataDir "config.ini"), @"
 # CP-Translate - cấu hình
-# Điền url backend và token (APP_TOKEN của backend) rồi lưu lại.
+# url và token của backend đã được điền sẵn. Bạn chỉ cần điền api_key rồi lưu lại.
 
-url=https://<ten-site>.netlify.app/api/translate
-token=
+url=$Url
+token=$Token
 lang=Vietnamese
 
-# Provider và API key của riêng bạn (tuỳ chọn). Có api_key thì server dùng đúng key này.
-# Bỏ trống api_key thì server dùng cấu hình sẵn của nó. Hiện hỗ trợ provider: gemini.
+# Provider và API key của riêng bạn. api_key là BẮT BUỘC: server không giữ key nào, chỉ dùng key bạn gửi lên.
+# Hiện hỗ trợ provider: gemini. model bỏ trống = model mặc định của provider.
 provider=gemini
 api_key=
 model=
@@ -63,7 +73,7 @@ CP-Translate - overlay dịch màn hình cho Nintendo Switch (Atmosphère + Ultr
 
 CÀI ĐẶT
 1. Chép TOÀN BỘ nội dung thư mục này vào GỐC thẻ SD (gộp với thư mục switch\ và config\ sẵn có).
-2. Mở config\translate\config.ini, điền url và token của backend, và api_key (key Gemini của bạn; provider=gemini).
+2. Mở config\translate\config.ini: url và token đã điền sẵn, bạn chỉ cần điền api_key (key Gemini của bạn; provider=gemini).
 3. $fontNote
 
 Cấu trúc sau khi chép:
