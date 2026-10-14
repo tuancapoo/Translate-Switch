@@ -1,5 +1,6 @@
 #include "gui/box_gui.hpp"
 
+#include "app/box_style.hpp"
 #include "app/translate_service.hpp"
 #include "gui/status_indicator.hpp"
 #include "gui/text_layout.hpp"
@@ -11,8 +12,7 @@ namespace {
     // Toạ độ từ server theo ảnh chụp 1280x720
     constexpr float SourceWidth = 1280.0F;
 
-    constexpr tsl::Color BoxColor  = { 0x0, 0x0, 0x0, 0xB };  // đen, alpha 11/15 ≈ 70%
-    constexpr tsl::Color TextColor = { 0xF, 0xF, 0xF, 0xF };  // trắng
+    constexpr tsl::Color TextColor = { 0xF, 0xF, 0xF, 0xF };  // trắng (nền box: đen, độ đậm lấy từ box_style)
 
     constexpr float MaxFontSize = 26.0F;
     constexpr float MinFontSize = 12.0F;
@@ -82,8 +82,9 @@ namespace {
                 return;
             }
 
+            const tsl::Color boxColor(0x0, 0x0, 0x0, box_style::alpha());
             for (const auto& box : m_boxes) {
-                renderer->drawRect(box.x, box.y, box.w, box.h, renderer->a(BoxColor));
+                renderer->drawRect(box.x, box.y, box.w, box.h, renderer->a(boxColor));
 
                 s32 baseline = box.y + Padding + static_cast<s32>(box.fontSize);
                 for (const auto& text : box.lines) {

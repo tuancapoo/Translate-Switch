@@ -13,7 +13,9 @@ private:
     tsl::elm::ListItem* m_statusItem = nullptr;
     tsl::elm::ListItem* m_resultsItem = nullptr;
     tsl::elm::ListItem* m_hotkeyItem = nullptr;
+    tsl::elm::ListItem* m_opacityItem = nullptr;
     u64 m_shownHotkey = 0;
+    u32 m_shownOpacityVersion = 0;
     u32 m_shownStatusVersion = 0;
     u32 m_shownTranslationVersion = 0;
 };

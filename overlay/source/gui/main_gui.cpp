@@ -1,5 +1,6 @@
 #include "gui/main_gui.hpp"
 
+#include "app/box_style.hpp"
 #include "app/hotkey.hpp"
 #include "app/translate_service.hpp"
 #include "config.hpp"
@@ -7,6 +8,7 @@
 #include "core/settings.hpp"
 #include "gui/box_gui.hpp"
 #include "gui/hotkey_gui.hpp"
+#include "gui/opacity_gui.hpp"
 #include "gui/result_gui.hpp"
 
 namespace {
@@ -17,6 +19,10 @@ namespace {
 
     std::string hotkeyLabel() {
         return "Phím tắt: " + hotkey::toGlyphs(hotkey::get());
+    }
+
+    std::string opacityLabel() {
+        return "Nền box: đặc " + std::to_string(box_style::opacityPercent()) + "%";
     }
 
     /// Provider và key đang dùng, đọc từ config.ini (sửa file rồi mở lại overlay để cập nhật)
@@ -84,6 +90,16 @@ tsl::elm::Element* MainGui::createUI() {
     });
     list->addItem(m_hotkeyItem);
 
+    m_opacityItem = new tsl::elm::ListItem(opacityLabel(), "Đổi");
+    m_shownOpacityVersion = box_style::version();
+    m_opacityItem->setClickListener([](u64 keys) {
+        if (!(keys & HidNpadButton_A))
+            return false;
+        tsl::changeTo<OpacityGui>();
+        return true;
+    });
+    list->addItem(m_opacityItem);
+
     list->addItem(new tsl::elm::CategoryHeader("Thông tin"));
 
     // Đặt provider và api_key trong config.ini (xem config.ini.example)
@@ -132,6 +148,12 @@ void MainGui::update() {
     if (hotkey::get() != m_shownHotkey) {
         m_shownHotkey = hotkey::get();
         m_hotkeyItem->setText(hotkeyLabel());
+    }
+
+    // Quay về từ màn hình chỉnh độ trong suốt
+    if (box_style::version() != m_shownOpacityVersion) {
+        m_shownOpacityVersion = box_style::version();
+        m_opacityItem->setText(opacityLabel());
     }
 
     // Dịch xong trong lúc đang mở menu -> chuyển thẳng sang box

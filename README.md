@@ -114,6 +114,7 @@ model=
 | `url`, `token` | Địa chỉ và `APP_TOKEN` của backend (bắt buộc) |
 | `lang` | Ngôn ngữ đích, mặc định `Vietnamese` |
 | `hotkey` | Phím tắt chụp & dịch, đổi được trong overlay |
+| `box_opacity` | Độ đậm nền box bản dịch, `0` (trong suốt hoàn toàn) đến `100` (đặc), mặc định `70`. Đổi được trong overlay |
 | `provider` | Provider dịch. **Hiện hỗ trợ: `gemini`** |
 | `api_key` | Key của bạn. Có key thì overlay gửi kèm request và server dùng đúng key này; **bỏ trống** thì server dùng key cấu hình sẵn của nó |
 | `model` | Tên model, bỏ trống để dùng mặc định của provider |
@@ -148,6 +149,7 @@ tại <https://dejavu-fonts.github.io/Download.html>, lấy file `ttf/DejaVuSans
 | **Xem bản dịch (N)** | Danh sách bản gốc (xám) và bản dịch (trắng) |
 | **Hiện box trên màn hình** | Hiện lại box của bản dịch gần nhất |
 | **Phím tắt** | Đổi tổ hợp phím: giữ 2-4 nút khoảng 1.5 giây để lưu, bấm riêng B để huỷ |
+| **Nền box** | Chỉnh độ trong suốt của box bản dịch: kéo thanh trượt trái/phải, có ô xem trước; thoát bằng B thì tự lưu vào `config.ini` |
 | **Kiểm tra mạng** | Trạng thái Wi-Fi, IP và kết quả phân giải DNS tới server |
 | **Thoát overlay** | Tắt hẳn overlay, quay về menu Ultrahand |
 
@@ -173,7 +175,8 @@ tại <https://dejavu-fonts.github.io/Download.html>, lấy file `ttf/DejaVuSans
 - [x] Gửi ảnh qua HTTPS bằng libcurl (TLS của hệ thống, không cần CA bundle)
 - [x] Parse JSON kết quả (jansson)
 - [x] Tự bật overlay khi dịch xong
-- [x] Box dịch toàn màn hình: đen ~70%, chữ trắng, tự xuống dòng, co cỡ chữ theo box
+- [x] Box dịch toàn màn hình: nền đen, chữ trắng, tự xuống dòng, co cỡ chữ theo box
+- [x] Chỉnh độ trong suốt của box (mặc định 70%) bằng thanh trượt có xem trước, lưu vào `config.ini`
 - [x] Chạm hoặc bấm nút để ẩn, tự trả lại RAM framebuffer fullscreen
 - [x] Tự hạ độ phân giải framebuffer (1280x720 → 960x540 → 640x360) khi thiếu RAM
 - [x] Danh sách bản dịch với tự xuống dòng

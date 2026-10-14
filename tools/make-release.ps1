@@ -37,6 +37,9 @@ provider=gemini
 api_key=
 model=
 
+# Độ đậm nền box bản dịch, 0-100 (0 = trong suốt hoàn toàn, 100 = đặc). Đổi được trong overlay: Cài đặt > Nền box.
+box_opacity=70
+
 # Phím tắt chụp & dịch (2-4 nút), đổi được trong overlay: Cài đặt > Phím tắt
 # Tên nút: L R ZL ZR SL SR A B X Y DUP DDOWN DLEFT DRIGHT LS RS PLUS MINUS
 hotkey=L+R+ZR

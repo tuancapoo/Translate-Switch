@@ -2,6 +2,7 @@
 #define TESLA_INIT_IMPL
 #include <tesla.hpp>
 
+#include "app/box_style.hpp"
 #include "app/hotkey.hpp"
 #include "app/translate_service.hpp"
 #include "config.hpp"
@@ -17,6 +18,7 @@ public:
         capture::init();
         http::init();
         hotkey::load();
+        box_style::load();
         translate_service::start();
     }
 
