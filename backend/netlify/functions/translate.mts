@@ -3,7 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { loadConfig } from "../../src/config.ts";
 import { detectImage } from "../../src/image.ts";
 import { createProviders } from "../../src/providers/factory.ts";
-import { parseProviderOverride, redactSecret, RequestError } from "../../src/request-provider.ts";
+import { parseProviderOverride, redactSecret, RequestError, withGeminiFallback } from "../../src/request-provider.ts";
 import { AllProvidersFailedError, FallbackTranslator } from "../../src/translator.ts";
 
 // POST /api/translate
@@ -82,7 +82,10 @@ export default async (req: Request): Promise<Response> => {
   if (!override && !serverTranslator)
     return json(400, { error: "x-provider and x-api-key are required (server providers are disabled)" });
 
-  const translator = override ? new FallbackTranslator(createProviders([override]), appConfig) : serverTranslator!;
+  // Gemini: nếu model người dùng chọn lỗi (503, timeout...) thì tự thử gemini-3.5-flash-lite với cùng key
+  const translator = override
+    ? new FallbackTranslator(createProviders(withGeminiFallback(override)), appConfig)
+    : serverTranslator!;
 
   try {
     return json(200, await translator.translate(image, info, targetLang));
@@ -91,7 +94,12 @@ export default async (req: Request): Promise<Response> => {
       const attempts = error.attempts.map((a) => ({ ...a, error: a.error && redactSecret(a.error, apiKey) }));
       // Một provider do người dùng chọn: nói rõ nó lỗi gì thay vì "All providers failed"
       if (override)
-        return json(502, { error: "Provider request failed", provider: override.name, detail: attempts[0]?.error, attempts });
+        return json(502, {
+          error: "Provider request failed",
+          provider: override.name,
+          detail: attempts.map((a) => a.error).join(" | ").slice(0, 600),
+          attempts,
+        });
       return json(502, { error: "All providers failed", attempts });
     }
     console.error(redactSecret(String(error), apiKey));

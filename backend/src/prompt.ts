@@ -26,31 +26,49 @@ Reply with JSON only, no markdown, in this shape:
 {"lines": [{ ${boxFormat}, "source": "original text", "translation": "translated text" }]}`;
 }
 
-/** Lấy object JSON trong câu trả lời, kể cả khi model bọc trong ```json ... ``` */
+/**
+ * Lấy JSON trong câu trả lời, kể cả khi model bọc trong ```json ... ```.
+ * Chấp nhận cả object ({"lines": [...]}) lẫn mảng trần ([...]): một số model (vd gemini-3.5-flash-lite) trả mảng.
+ */
 export function extractJson(text: string): unknown {
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
+  try {
+    return JSON.parse(text);
+  } catch {
+    // có chữ thừa quanh JSON (markdown, lời dẫn): cắt từ ký tự mở đầu tiên tới ký tự đóng tương ứng cuối cùng
+  }
+
+  const objectStart = text.indexOf("{");
+  const arrayStart = text.indexOf("[");
+  const useArray = arrayStart !== -1 && (objectStart === -1 || arrayStart < objectStart);
+  const start = useArray ? arrayStart : objectStart;
+  const end = useArray ? text.lastIndexOf("]") : text.lastIndexOf("}");
   if (start === -1 || end <= start)
-    throw new Error("no JSON object in model output");
+    throw new Error("no JSON in model output");
   return JSON.parse(text.slice(start, end + 1));
+}
+
+/** Một số model bọc thêm một tầng mảng: [[ymin, xmin, ymax, xmax]] */
+function unwrapBox(box: unknown): unknown {
+  return Array.isArray(box) && box.length === 1 && Array.isArray(box[0]) ? box[0] : box;
 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(value)));
 
 /** Kiểm tra và chuẩn hoá output của model về TextLine (toạ độ pixel) */
 export function normalizeLines(data: unknown, width: number, height: number, mode: CoordinateMode): TextLine[] {
-  const lines = (data as { lines?: unknown })?.lines;
+  // Model có thể trả {"lines": [...]} hoặc thẳng một mảng [...]
+  const lines = Array.isArray(data) ? data : (data as { lines?: unknown })?.lines;
   if (!Array.isArray(lines))
     throw new Error('model output has no "lines" array');
 
-  return lines.flatMap((raw): TextLine[] => {
+  const result = lines.flatMap((raw): TextLine[] => {
     const item = raw as Record<string, unknown>;
-    if (typeof item.translation !== "string" || item.translation.trim() === "")
+    if (typeof item?.translation !== "string" || item.translation.trim() === "")
       return [];
 
     let x: number, y: number, w: number, h: number;
     if (mode === "box_2d") {
-      const box = item.box_2d;
+      const box = unwrapBox(item.box_2d);
       if (!Array.isArray(box) || box.length !== 4 || !box.every((v) => typeof v === "number"))
         return [];
       const [ymin, xmin, ymax, xmax] = box as number[];
@@ -75,4 +93,10 @@ export function normalizeLines(data: unknown, width: number, height: number, mod
       translation: item.translation,
     }];
   });
+
+  // Model có trả dòng nhưng không dòng nào dùng được: coi là lỗi (để fallback), đừng báo "thành công 0 dòng"
+  if (lines.length > 0 && result.length === 0)
+    throw new Error("model returned lines in an unexpected format");
+
+  return result;
 }
