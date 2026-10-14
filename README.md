@@ -117,9 +117,10 @@ model=
 | `lang` | Ngôn ngữ đích, mặc định `Vietnamese` |
 | `hotkey` | Phím tắt chụp & dịch, đổi được trong overlay |
 | `box_opacity` | Độ đậm nền box bản dịch, `0` (trong suốt hoàn toàn) đến `100` (đặc), mặc định `70`. Đổi được trong overlay |
-| `provider` | Provider dịch. **Hiện hỗ trợ: `gemini`** |
+| `provider` | Provider dịch: `gemini` (mặc định), `claude`, `openai`, `openrouter`, `openai-compatible` |
 | `api_key` | **Bắt buộc.** Key của bạn, overlay gửi kèm mỗi request và server dùng đúng key này (server mặc định không giữ key nào). Bỏ trống sẽ báo lỗi 400 |
-| `model` | Tên model, bỏ trống để dùng mặc định của provider |
+| `model` | Tên model. Bỏ trống thì dùng mặc định của provider (`gemini-3.5-flash-lite`, `claude-opus-5-5`, `gpt-6-luna`). **Bắt buộc** với `openrouter` và `openai-compatible` |
+| `base_url` | Chỉ cho `openai-compatible`: URL `https` của API, thường kết thúc bằng `/v1` |
 
 Overlay không mở được bàn phím hệ thống, nên `provider` và `api_key` được đặt bằng cách sửa file này trên máy tính
 (rút thẻ SD ra). Trong overlay, mục **Thông tin** hiện provider và key đang dùng, key được che chỉ còn 4 ký tự cuối.
@@ -324,7 +325,7 @@ x-model: claude-sonnet-5-5
 Content-Type: image/jpeg
 ```
 
-- Request **chỉ dùng provider đó**, không tự chuyển sang provider khác. Provider lỗi thì trả `502 {"error":"Provider request failed","detail":"..."}` kèm lý do thật (ví dụ `HTTP 503`, `timeout`, `API key not valid`).
+- Request **chỉ dùng provider đó**, không tự chuyển sang provider khác. Riêng `gemini`: nếu `x-model` khác mặc định thì khi model đó lỗi (503, timeout...) backend tự thử tiếp `gemini-3.5-flash-lite` **bằng cùng API key**; trường `provider` trong kết quả sẽ là `custom-gemini-fallback`. Khi mọi model đều lỗi thì trả `502 {"error":"Provider request failed","detail":"..."}` kèm lý do thật (ví dụ `HTTP 503`, `timeout`, `API key not valid`).
 - Vẫn cần `x-app-token` đúng. Key của người dùng chỉ đi qua request, không được lưu và bị che (`***`) khỏi thông báo lỗi.
 - Header sai trả `400` kèm lý do. `x-base-url` bị từ chối nếu không phải `https`, trỏ vào `localhost`, mạng nội bộ hoặc địa chỉ riêng.
 

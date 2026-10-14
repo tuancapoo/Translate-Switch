@@ -42,10 +42,19 @@ token=$Token
 lang=Vietnamese
 
 # Provider và API key của riêng bạn. api_key là BẮT BUỘC: server không giữ key nào, chỉ dùng key bạn gửi lên.
-# Hiện hỗ trợ provider: gemini. model bỏ trống = model mặc định của provider.
+#
+# provider: gemini | claude | openai | openrouter | openai-compatible
+#   gemini             model mặc định gemini-3.5-flash-lite (nếu chậm, thử model=gemini-3.1-flash-lite)
+#   claude             model mặc định claude-opus-5-5 (mạnh nhưng chậm/đắt; nhanh hơn: claude-sonnet-5-5, claude-haiku-4-5)
+#   openai             model mặc định gpt-6-luna
+#   openrouter         BẮT BUỘC đặt model (tên model của OpenRouter)
+#   openai-compatible  BẮT BUỘC đặt model và base_url (API chuẩn /v1/chat/completions, https công khai)
+# model bỏ trống = dùng model mặc định ở trên.
 provider=gemini
 api_key=
 model=
+# Chỉ dùng với provider=openai-compatible, ví dụ https://api.example.com/v1
+base_url=
 
 # Độ đậm nền box bản dịch, 0-100 (0 = trong suốt hoàn toàn, 100 = đặc). Đổi được trong overlay: Cài đặt > Nền box.
 box_opacity=70
@@ -73,7 +82,7 @@ CP-Translate - overlay dịch màn hình cho Nintendo Switch (Atmosphère + Ultr
 
 CÀI ĐẶT
 1. Chép TOÀN BỘ nội dung thư mục này vào GỐC thẻ SD (gộp với thư mục switch\ và config\ sẵn có).
-2. Mở config\translate\config.ini: url và token đã điền sẵn, bạn chỉ cần điền api_key (key Gemini của bạn; provider=gemini).
+2. Mở config\translate\config.ini: url và token đã điền sẵn, bạn chỉ cần điền api_key (provider mặc định là gemini; đổi provider và model trong cùng file, xem chú thích bên trong).
 3. $fontNote
 
 Cấu trúc sau khi chép:

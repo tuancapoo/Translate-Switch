@@ -29,7 +29,7 @@ namespace {
     std::string providerLabel() {
         std::string key = settings::readValue(config::SettingsPath, "api_key");
         if (key.empty())
-            return "Provider: key của server";
+            return "Provider: chưa đặt api_key";
 
         std::string provider = settings::readValue(config::SettingsPath, "provider");
         if (provider.empty())
