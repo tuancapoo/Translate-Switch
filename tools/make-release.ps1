@@ -51,7 +51,7 @@ if (Test-Path $font) {
     Copy-Item $font $dataDir
     $license = Join-Path $assets "LICENSE"
     if (Test-Path $license) { Copy-Item $license (Join-Path $dataDir "DejaVu-LICENSE.txt") }
-    $fontNote = "Đã kèm font DejaVuSans.ttf."
+    $fontNote = "Đã kèm font DejaVuSans.ttf (giấy phép: config\translate\DejaVu-LICENSE.txt, giữ nguyên file này)."
 } else {
     $fontNote = "Chưa kèm font: tải DejaVuSans.ttf tại https://dejavu-fonts.github.io/Download.html và chép vào config\translate\"
     Write-Warning "Không có tools\release-assets\DejaVuSans.ttf - release sẽ không kèm font tiếng Việt"
@@ -63,7 +63,7 @@ CP-Translate - overlay dịch màn hình cho Nintendo Switch (Atmosphère + Ultr
 
 CÀI ĐẶT
 1. Chép TOÀN BỘ nội dung thư mục này vào GỐC thẻ SD (gộp với thư mục switch\ và config\ sẵn có).
-2. Mở config\translate\config.ini, điền url và token của backend.
+2. Mở config\translate\config.ini, điền url và token của backend, và api_key (key Gemini của bạn; provider=gemini).
 3. $fontNote
 
 Cấu trúc sau khi chép:

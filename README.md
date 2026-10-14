@@ -80,7 +80,8 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 
 ### 1. Cài overlay lên thẻ SD
 
-Tải `translate.ovl` (hoặc tự build, xem [Frontend](#frontend-overlay-switch)) rồi chép vào thẻ SD theo cấu trúc:
+Tải file zip mới nhất ở mục [Releases](https://github.com/tuancapoo/Translate-Switch/releases) (gồm `translate.ovl`, `config.ini` mẫu và font tiếng Việt),
+giải nén vào **gốc thẻ SD** (hoặc tự build, xem [Frontend](#frontend-overlay-switch)). Cấu trúc trên thẻ SD:
 
 ```
 SD:\
@@ -90,7 +91,8 @@ SD:\
 └─ config\
    └─ translate\
       ├─ config.ini        ← cấu hình (bắt buộc)
-      └─ DejaVuSans.ttf    ← font tiếng Việt (khuyến nghị)
+      ├─ DejaVuSans.ttf    ← font tiếng Việt (đã kèm trong zip release)
+      └─ DejaVu-LICENSE.txt ← giấy phép của font, giữ nguyên
 ```
 
 ### 2. Tạo `config.ini`
@@ -116,7 +118,7 @@ model=
 | `hotkey` | Phím tắt chụp & dịch, đổi được trong overlay |
 | `box_opacity` | Độ đậm nền box bản dịch, `0` (trong suốt hoàn toàn) đến `100` (đặc), mặc định `70`. Đổi được trong overlay |
 | `provider` | Provider dịch. **Hiện hỗ trợ: `gemini`** |
-| `api_key` | Key của bạn. Có key thì overlay gửi kèm request và server dùng đúng key này; **bỏ trống** thì server dùng key cấu hình sẵn của nó |
+| `api_key` | **Bắt buộc.** Key của bạn, overlay gửi kèm mỗi request và server dùng đúng key này (server mặc định không giữ key nào). Bỏ trống sẽ báo lỗi 400 |
 | `model` | Tên model, bỏ trống để dùng mặc định của provider |
 
 Overlay không mở được bàn phím hệ thống, nên `provider` và `api_key` được đặt bằng cách sửa file này trên máy tính
@@ -126,9 +128,12 @@ Overlay không mở được bàn phím hệ thống, nên `provider` và `api_k
 
 ### 3. Font tiếng Việt
 
-Font hệ thống của Switch thiếu nhiều ký tự tiếng Việt. Tải **DejaVu Sans**
-tại <https://dejavu-fonts.github.io/Download.html>, lấy file `ttf/DejaVuSans.ttf` và chép vào
-`SD:\config\translate\`. Overlay sẽ dùng file `.ttf` đầu tiên tìm thấy trong thư mục này.
+Font hệ thống của Switch thiếu nhiều ký tự tiếng Việt. **Zip release đã kèm sẵn font DejaVu Sans**, nên không cần làm gì thêm.
+Overlay dùng file `.ttf` đầu tiên tìm thấy trong `SD:\config\translate\`.
+
+Nếu tự build và đóng gói, tải **DejaVu Sans** tại <https://dejavu-fonts.github.io/Download.html>, lấy `ttf/DejaVuSans.ttf`
+(và file `LICENSE`) đặt vào `tools/release-assets/` rồi chạy `tools/make-release.ps1`; script sẽ đưa chúng vào gói.
+Font DejaVu © Bitstream, Inc. và các tác giả DejaVu, theo giấy phép đi kèm.
 
 ---
 
