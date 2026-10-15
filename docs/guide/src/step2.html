@@ -7,8 +7,8 @@
   .panel.cfg { font-size: 25px; padding: 20px 26px; line-height: 1.5; }
   .note { font-size: 25px; padding: 18px 26px; line-height: 1.38; }
   .note + .note { margin-top: 14px; }
-  .tip { background: rgba(56, 189, 248, 0.10); border-color: rgba(56, 189, 248, 0.45); color: #bae6fd; }
-  .tip .t { color: #7dd3fc; font-weight: 800; }
+  .step small.bank { color: #fde68a; margin-top: 6px; }
+  .step small.bank b { color: #fbbf24; }
 </style></head>
 <body><div class="card">
   <header><span class="badge">BƯỚC 2 / 5</span><span class="app">CP-Translate</span></header>
@@ -16,7 +16,7 @@
   <p class="sub" style="margin-bottom:22px">Làm ngay trên máy tính, <b>trước khi chép vào thẻ SD</b>.</p>
 
   <div class="steps">
-    <div class="step"><div class="num">1</div><p>Vào <b>aistudio.google.com/apikey</b>, đăng nhập Google<small>Bấm <b>Create API key</b> (nên dùng Gemini, miễn phí) rồi copy key</small></p></div>
+    <div class="step"><div class="num">1</div><p>Vào <b>aistudio.google.com/apikey</b>, đăng nhập Google<small>Bấm <b>Create API key</b> (nên dùng Gemini, miễn phí) rồi copy key</small><small class="bank">Nếu cần, <b>liên kết tài khoản ngân hàng (thẻ)</b> để dùng gói free</small></p></div>
     <div class="step"><div class="num">2</div><p>Mở <code>config\translate\config.ini</code> bằng Notepad</p></div>
     <div class="step"><div class="num">3</div><p>Dán key vào dòng <code>api_key=</code> rồi <b>lưu file</b></p></div>
   </div>
@@ -29,7 +29,6 @@ provider=gemini
 model=gemini-3.5-flash-lite</div>
 
   <div class="sp"></div>
-  <div class="note tip"><span class="t">Key báo lỗi 403 / không dùng được gói free?</span> Thử <b>liên kết tài khoản ngân hàng (thẻ)</b> trong Google AI Studio / Billing: một số tài khoản chỉ được cấp gói miễn phí sau bước này. Tự đọc kỹ điều khoản của Google trước khi liên kết.</div>
   <div class="note"><span class="warn">Không chia sẻ</span> file <code>config.ini</code> hay API key cho người khác. Chỉ sửa <b>sau dấu =</b>, không thêm dấu cách hay dấu ngoặc.</div>
   <footer><span>Điền xong mới sang bước chép vào thẻ SD</span><span>2 / 5</span></footer>
 </div></body></html>
