@@ -1,0 +1,135 @@
+/* Kiểu chung cho các thẻ hướng dẫn 1080x1350 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 1080px;
+  height: 1350px;
+  font-family: "Segoe UI", "Segoe UI Emoji", Arial, sans-serif;
+  background: #0b1220;
+  color: #e5edf8;
+}
+
+.card {
+  width: 1080px;
+  height: 1350px;
+  padding: 64px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(900px 500px at 100% -10%, rgba(45, 212, 191, 0.20), transparent 60%),
+    radial-gradient(700px 500px at -10% 110%, rgba(96, 165, 250, 0.18), transparent 60%),
+    #0b1220;
+}
+
+header { display: flex; align-items: center; gap: 22px; margin-bottom: 14px; }
+
+.badge {
+  background: #2dd4bf;
+  color: #06231f;
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: 1px;
+  padding: 10px 22px;
+  border-radius: 999px;
+}
+
+.app { margin-left: auto; font-size: 26px; font-weight: 700; color: #7dd3fc; }
+
+h1 { font-size: 60px; line-height: 1.12; font-weight: 800; margin: 18px 0 10px; }
+.sub { font-size: 30px; color: #9fb3cc; margin-bottom: 30px; line-height: 1.35; }
+
+.steps { display: flex; flex-direction: column; gap: 22px; }
+
+.step {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  background: rgba(148, 163, 184, 0.10);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 22px;
+  padding: 24px 28px;
+}
+
+.num {
+  flex: 0 0 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #38bdf8;
+  color: #04202e;
+  font-weight: 800;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step p { font-size: 33px; line-height: 1.38; }
+.step small { display: block; font-size: 26px; color: #9fb3cc; margin-top: 6px; line-height: 1.35; }
+
+b { color: #ffffff; }
+.hl { color: #2dd4bf; font-weight: 700; }
+.warn { color: #fbbf24; font-weight: 700; }
+
+code, .mono {
+  font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  padding: 2px 10px;
+  border-radius: 8px;
+  font-size: 0.86em;
+  color: #fde68a;
+}
+
+.panel {
+  background: #060b16;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 20px;
+  padding: 26px 30px;
+  font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+  font-size: 29px;
+  line-height: 1.55;
+  color: #cbd5e1;
+  white-space: pre;
+}
+.panel .new { color: #2dd4bf; font-weight: 700; }
+.panel .dim { color: #64748b; }
+.panel .mark { background: rgba(251, 191, 36, 0.20); color: #fde68a; border-radius: 6px; padding: 0 6px; }
+
+/* Khoảng đệm co giãn: đẩy hộp lưu ý xuống đáy nhưng luôn chừa tối thiểu một khoảng hở */
+.sp { flex: 1 1 auto; min-height: 22px; }
+
+.note {
+  background: rgba(251, 191, 36, 0.10);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  border-radius: 20px;
+  padding: 22px 28px;
+  font-size: 28px;
+  line-height: 1.4;
+  color: #fde68a;
+}
+
+footer {
+  margin-top: 22px;
+  font-size: 24px;
+  color: #64748b;
+  display: flex;
+  justify-content: space-between;
+}
+
+.keys { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.key {
+  background: #e2e8f0;
+  color: #0f172a;
+  font-weight: 800;
+  border-radius: 10px;
+  padding: 2px 14px;
+  font-size: 0.92em;
+  box-shadow: 0 3px 0 #94a3b8;
+}
+
+img.shot {
+  width: 100%;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  display: block;
+}

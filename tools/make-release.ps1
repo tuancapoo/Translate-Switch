@@ -83,8 +83,9 @@ CP-Translate - overlay dịch màn hình cho Nintendo Switch (Atmosphère + Ultr
 =====================================================================================
 
 CÀI ĐẶT
-1. Chép TOÀN BỘ nội dung thư mục này vào GỐC thẻ SD (gộp với thư mục switch\ và config\ sẵn có).
-2. Mở config\translate\config.ini: url và token đã điền sẵn, bạn chỉ cần điền api_key (provider mặc định là gemini; đổi provider và model trong cùng file, xem chú thích bên trong).
+1. Mở config\translate\config.ini trong thư mục này bằng Notepad: url và token đã điền sẵn, bạn chỉ cần điền api_key rồi lưu
+   (provider mặc định là gemini; đổi provider và model trong cùng file, xem chú thích bên trong).
+2. Chép TOÀN BỘ nội dung thư mục này vào GỐC thẻ SD (gộp với thư mục switch\ và config\ sẵn có).
 3. $fontNote
 
 Cấu trúc sau khi chép:

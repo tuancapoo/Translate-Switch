@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><link rel="stylesheet" href="guide.css"></head>
+<body><div class="card">
+  <header><span class="badge">BƯỚC 3 / 5</span><span class="app">CP-Translate</span></header>
+  <h1>Chép vào thẻ SD</h1>
+  <p class="sub">Chép nội dung (đã điền key) vào <b>gốc thẻ SD</b> của Switch.</p>
+
+  <div class="steps">
+    <div class="step"><div class="num">1</div><p>Tắt Switch, rút thẻ SD cắm vào máy tính</p></div>
+    <div class="step"><div class="num">2</div><p>Chép hai thư mục <code>switch</code> và <code>config</code> vào <b>gốc</b> thẻ SD<small>Nếu hỏi trùng thư mục, chọn <b>Gộp (Merge)</b>, đừng thay thế</small></p></div>
+  </div>
+
+  <div class="panel" style="margin-top:28px">SD:\ <span class="dim">(gốc thẻ nhớ)</span>
+├─ atmosphere\
+├─ switch\
+│  └─ .overlays\
+│     └─ <span class="new">translate.ovl</span>        <span class="dim">← overlay</span>
+└─ config\
+   └─ translate\
+      ├─ <span class="new">config.ini</span>         <span class="dim">← đã có api_key</span>
+      ├─ <span class="new">DejaVuSans.ttf</span>     <span class="dim">← font tiếng Việt</span>
+      └─ <span class="new">DejaVu-LICENSE.txt</span></div>
+
+  <div class="sp"></div>
+  <div class="note"><span class="warn">Đừng</span> chép cả thư mục <code>CP-Translate</code> vào thẻ. Hai thư mục <code>switch</code> và <code>config</code> phải nằm <b>ngay ở gốc</b> thẻ SD.</div>
+  <footer><span>Gốc thẻ SD = nơi có sẵn thư mục atmosphere</span><span>3 / 5</span></footer>
+</div></body></html>

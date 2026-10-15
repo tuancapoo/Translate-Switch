@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><link rel="stylesheet" href="guide.css">
+<style>
+  .panel.cfg { font-size: 26px; padding: 24px 26px; }
+  .cap { margin-top: 12px; font-size: 25px; color: #9fb3cc; }
+</style></head>
+<body><div class="card">
+  <header><span class="badge">BƯỚC 2 / 5</span><span class="app">CP-Translate</span></header>
+  <h1>Điền API key vào config</h1>
+  <p class="sub">Làm ngay trên máy tính, <b>trước khi chép vào thẻ SD</b>.</p>
+
+  <div class="steps">
+    <div class="step"><div class="num">1</div><p>Vào <b>aistudio.google.com/apikey</b>, đăng nhập Google<small>Bấm <b>Create API key</b> (nên dùng Gemini, miễn phí) rồi copy key</small></p></div>
+    <div class="step"><div class="num">2</div><p>Mở <code>config\translate\config.ini</code> bằng Notepad</p></div>
+    <div class="step"><div class="num">3</div><p>Dán key vào dòng <code>api_key=</code> rồi <b>lưu file</b></p></div>
+  </div>
+
+  <div class="panel cfg" style="margin-top:26px">url=https://translate-nx.netlify.app/api/translate
+token=...
+provider=gemini
+<span class="mark">api_key=DÁN_KEY_CỦA_BẠN_VÀO_ĐÂY</span>
+model=gemini-3.5-flash-lite
+box_opacity=70
+hotkey=L+R+ZR</div>
+  <div class="cap">url và token đã được điền sẵn, bạn không cần sửa.</div>
+
+  <div class="sp"></div>
+  <div class="note"><span class="warn">Không chia sẻ</span> file <code>config.ini</code> hay API key cho người khác. Chỉ sửa <b>sau dấu =</b>, không thêm dấu cách hay dấu ngoặc.</div>
+  <footer><span>Điền xong mới sang bước chép vào thẻ SD</span><span>2 / 5</span></footer>
+</div></body></html>

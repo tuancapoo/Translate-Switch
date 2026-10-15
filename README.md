@@ -81,7 +81,8 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 ### 1. Cài overlay lên thẻ SD
 
 Tải file zip mới nhất ở mục [Releases](https://github.com/tuancapoo/Translate-Switch/releases) (gồm `translate.ovl`, `config.ini` mẫu và font tiếng Việt),
-giải nén vào **gốc thẻ SD** (hoặc tự build, xem [Frontend](#frontend-overlay-switch)). Cấu trúc trên thẻ SD:
+giải nén ra máy tính, **điền `api_key` vào `config/translate/config.ini` trước** (xem mục 2), rồi chép vào **gốc thẻ SD**
+(hoặc tự build, xem [Frontend](#frontend-overlay-switch)). Cấu trúc trên thẻ SD:
 
 ```
 SD:\
