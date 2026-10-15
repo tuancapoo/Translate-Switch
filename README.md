@@ -124,7 +124,7 @@ model=
 | `base_url` | Chỉ cho `openai-compatible`: URL `https` của API, thường kết thúc bằng `/v1` |
 
 `provider` và `model` chọn được ngay trong overlay (**Cài đặt → Provider / Model**), còn `api_key` thì phải sửa trong file này
-trên máy tính (rút thẻ SD ra) vì overlay không mở được bàn phím hệ thống. Mục **Thông tin** của overlay hiện key đang dùng
+trên máy tính (trước khi chép vào thẻ SD, hoặc chép qua DBI) vì overlay không mở được bàn phím hệ thống. Mục **Thông tin** của overlay hiện key đang dùng
 (che chỉ còn 4 ký tự cuối).
 
 > ⚠️ `config.ini` chứa token và API key, **không chia sẻ** file này. Nên dùng key riêng có hạn mức chi tiêu thấp.
