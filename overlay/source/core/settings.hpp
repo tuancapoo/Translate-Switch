@@ -7,9 +7,10 @@
 //   url=https://<site>.netlify.app/api/translate
 //   token=<APP_TOKEN của server>
 //   lang=Vietnamese
-//   provider=gemini          (tuỳ chọn) provider dịch, hiện hỗ trợ: gemini
-//   api_key=<key của bạn>    (tuỳ chọn) có key thì gửi kèm request; bỏ trống thì server dùng key của nó
-//   model=<tên model>        (tuỳ chọn) bỏ trống để dùng model mặc định của provider
+//   provider=gemini          provider dịch: gemini, claude, openai, openrouter, openai-compatible
+//   api_key=<key của bạn>    BẮT BUỘC: key của provider đã chọn
+//   model=<tên model>        tuỳ chọn; bắt buộc với openrouter và openai-compatible
+//   base_url=https://...     chỉ cho openai-compatible
 
 namespace settings {
 
@@ -20,6 +21,7 @@ namespace settings {
         std::string provider = "gemini";
         std::string apiKey;
         std::string model;
+        std::string baseUrl;   ///< chỉ dùng với provider=openai-compatible
     };
 
     /// Đọc file cấu hình. Trả về chuỗi rỗng nếu thành công, ngược lại là thông báo lỗi.

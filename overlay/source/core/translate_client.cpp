@@ -66,18 +66,30 @@ namespace translate_client {
             "x-target-lang: " + settings.lang,
         };
 
-        // Có api_key thì dùng provider + key của người dùng; không có thì server dùng cấu hình của nó
-        if (!settings.apiKey.empty()) {
-            if (!providers::isSupported(settings.provider))
-                return "provider \"" + settings.provider + "\" chưa hỗ trợ (hiện có: " + providers::supportedList() + ")";
-            std::string keyError = providers::validateKey(settings.apiKey);
-            if (!keyError.empty())
-                return keyError;
+        // Backend chỉ dùng provider/key/model do người dùng gửi: kiểm tra trước để báo lỗi ngay trên máy
+        if (settings.apiKey.empty())
+            return "Chưa đặt api_key trong config.ini";
+        if (!providers::isSupported(settings.provider))
+            return "provider \"" + settings.provider + "\" chưa hỗ trợ (hiện có: " + providers::supportedList() + ")";
 
-            headers.push_back("x-provider: " + settings.provider);
-            headers.push_back("x-api-key: " + settings.apiKey);
-            if (!settings.model.empty())
-                headers.push_back("x-model: " + settings.model);
+        std::string keyError = providers::validateKey(settings.apiKey);
+        if (!keyError.empty())
+            return keyError;
+        if (providers::requiresModel(settings.provider) && settings.model.empty())
+            return "provider " + settings.provider + " cần đặt model trong config.ini";
+
+        headers.push_back("x-provider: " + settings.provider);
+        headers.push_back("x-api-key: " + settings.apiKey);
+        if (!settings.model.empty())
+            headers.push_back("x-model: " + settings.model);
+
+        if (providers::requiresBaseUrl(settings.provider)) {
+            if (settings.baseUrl.empty())
+                return "provider " + settings.provider + " cần đặt base_url trong config.ini";
+            std::string urlError = providers::validateBaseUrl(settings.baseUrl);
+            if (!urlError.empty())
+                return urlError;
+            headers.push_back("x-base-url: " + settings.baseUrl);
         }
 
         http::Response response = http::post(settings.url, headers, jpeg, size, config::TranslateTimeoutSec);

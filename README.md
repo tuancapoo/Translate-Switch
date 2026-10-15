@@ -19,7 +19,7 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 - Chạy như một **overlay Tesla/Ultrahand**: không cần thoát game, không cần PC bên cạnh.
 - **OCR + dịch trong một bước** bằng model AI có khả năng đọc ảnh (Gemini, ChatGPT/Claude qua router).
 - Bản dịch hiển thị **đúng vị trí** chữ gốc trên màn hình, chạm là ẩn.
-- API key nằm trên server, **không lưu trên Switch**.
+- Bạn dùng **provider, API key và model của chính mình** (đặt trong `config.ini`). Server chỉ chuyển tiếp, **không lưu key**.
 
 <p align="center">
   <img src="docs/screenshot-translation.jpg" alt="Bản dịch hiện đè lên hộp thoại trong game" width="49%">
@@ -39,7 +39,7 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 | 👆 **Chạm để ẩn** | Chạm màn hình hoặc bấm nút bất kỳ để ẩn hết box và chơi tiếp |
 | 📜 **Xem lại bản dịch** | Danh sách bản gốc + bản dịch trong menu overlay |
 | ⌨️ **Đổi phím tắt** | Giữ tổ hợp mới 1.5 giây ngay trong overlay, tự lưu vào `config.ini` |
-| 🔁 **Fallback nhiều AI** | Server thử lần lượt nhiều provider theo độ ưu tiên, lỗi/timeout thì chuyển provider khác |
+| 🔁 **Nhiều provider AI** | Gemini, Claude, ChatGPT, OpenRouter hoặc API chuẩn OpenAI, tuỳ key bạn có. (Tuỳ chọn cho chủ server: bật chuỗi fallback bằng key của server, xem `ALLOW_SERVER_PROVIDERS`) |
 | 🇻🇳 **Font tiếng Việt** | Nạp font TTF từ thẻ SD cho các ký tự font hệ thống thiếu (ấ, ặ, ữ, ✓...) |
 | 🩺 **Kiểm tra mạng** | Xem trạng thái Wi-Fi, IP, DNS ngay trong overlay |
 
@@ -80,7 +80,9 @@ menu, nhiệm vụ... **ngay trong lúc chơi** mà không phải cầm điện 
 
 ### 1. Cài overlay lên thẻ SD
 
-Tải `translate.ovl` (hoặc tự build, xem [Frontend](#frontend-overlay-switch)) rồi chép vào thẻ SD theo cấu trúc:
+Tải file zip mới nhất ở mục [Releases](https://github.com/tuancapoo/Translate-Switch/releases) (gồm `translate.ovl`, `config.ini` mẫu và font tiếng Việt),
+giải nén ra máy tính, **điền `api_key` vào `config/translate/config.ini` trước** (xem mục 2), rồi chép vào **gốc thẻ SD**
+(hoặc tự build, xem [Frontend](#frontend-overlay-switch)). Cấu trúc trên thẻ SD:
 
 ```
 SD:\
@@ -90,7 +92,8 @@ SD:\
 └─ config\
    └─ translate\
       ├─ config.ini        ← cấu hình (bắt buộc)
-      └─ DejaVuSans.ttf    ← font tiếng Việt (khuyến nghị)
+      ├─ DejaVuSans.ttf    ← font tiếng Việt (đã kèm trong zip release)
+      └─ DejaVu-LICENSE.txt ← giấy phép của font, giữ nguyên
 ```
 
 ### 2. Tạo `config.ini`
@@ -114,20 +117,39 @@ model=
 | `url`, `token` | Địa chỉ và `APP_TOKEN` của backend (bắt buộc) |
 | `lang` | Ngôn ngữ đích, mặc định `Vietnamese` |
 | `hotkey` | Phím tắt chụp & dịch, đổi được trong overlay |
-| `provider` | Provider dịch. **Hiện hỗ trợ: `gemini`** |
-| `api_key` | Key của bạn. Có key thì overlay gửi kèm request và server dùng đúng key này; **bỏ trống** thì server dùng key cấu hình sẵn của nó |
-| `model` | Tên model, bỏ trống để dùng mặc định của provider |
+| `box_opacity` | Độ đậm nền box bản dịch, `0` (trong suốt hoàn toàn) đến `100` (đặc), mặc định `70`. Đổi được trong overlay |
+| `provider` | Provider dịch: `gemini` (mặc định), `claude`, `openai`, `openrouter`, `openai-compatible` |
+| `api_key` | **Bắt buộc.** Key của bạn, overlay gửi kèm mỗi request và server dùng đúng key này (server mặc định không giữ key nào). Bỏ trống sẽ báo lỗi 400 |
+| `model` | Tên model. Bỏ trống thì dùng mặc định của provider (`gemini-3.5-flash-lite`, `claude-opus-5-5`, `gpt-6-luna`). **Bắt buộc** với `openrouter` và `openai-compatible` |
+| `base_url` | Chỉ cho `openai-compatible`: URL `https` của API, thường kết thúc bằng `/v1` |
 
-Overlay không mở được bàn phím hệ thống, nên `provider` và `api_key` được đặt bằng cách sửa file này trên máy tính
-(rút thẻ SD ra). Trong overlay, mục **Thông tin** hiện provider và key đang dùng, key được che chỉ còn 4 ký tự cuối.
+`provider` và `model` chọn được ngay trong overlay (**Cài đặt → Provider / Model**), còn `api_key` thì phải sửa trong file này
+trên máy tính (trước khi chép vào thẻ SD, hoặc chép qua DBI) vì overlay không mở được bàn phím hệ thống. Mục **Thông tin** của overlay hiện key đang dùng
+(che chỉ còn 4 ký tự cuối).
 
 > ⚠️ `config.ini` chứa token và API key, **không chia sẻ** file này. Nên dùng key riêng có hạn mức chi tiêu thấp.
 
+#### Danh sách provider và model
+
+| Provider (`provider=`) | Nhà cung cấp | Model chọn sẵn trong overlay | Ghi chú |
+|---|---|---|---|
+| `gemini` | Google Gemini | `gemini-3.5-flash-lite` (mặc định), `gemini-3.1-flash-lite`, `gemini-3-flash-preview` | Có gói miễn phí. Model chọn khác mặc định mà lỗi thì tự thử lại `gemini-3.5-flash-lite` |
+| `claude` | Anthropic | `claude-opus-5-5` (mặc định, chậm), `claude-sonnet-5-5`, `claude-haiku-4-5` (nhanh) | Cần key trả phí |
+| `openai` | OpenAI (ChatGPT) | `gpt-6-luna` (mặc định) | Cần key trả phí |
+| `openrouter` | OpenRouter | không có sẵn | **Bắt buộc** đặt `model=` trong `config.ini` |
+| `openai-compatible` | API chuẩn OpenAI bất kỳ | không có sẵn | **Bắt buộc** đặt `model=` và `base_url=` trong `config.ini` |
+
+Muốn dùng model khác ngoài danh sách chọn sẵn, sửa `model=` trong `config.ini` (tên model phải đúng với nhà cung cấp, đổi provider trong
+overlay sẽ đặt lại `model`).
+
 ### 3. Font tiếng Việt
 
-Font hệ thống của Switch thiếu nhiều ký tự tiếng Việt. Tải **DejaVu Sans**
-tại <https://dejavu-fonts.github.io/Download.html>, lấy file `ttf/DejaVuSans.ttf` và chép vào
-`SD:\config\translate\`. Overlay sẽ dùng file `.ttf` đầu tiên tìm thấy trong thư mục này.
+Font hệ thống của Switch thiếu nhiều ký tự tiếng Việt. **Zip release đã kèm sẵn font DejaVu Sans**, nên không cần làm gì thêm.
+Overlay dùng file `.ttf` đầu tiên tìm thấy trong `SD:\config\translate\`.
+
+Nếu tự build và đóng gói, tải **DejaVu Sans** tại <https://dejavu-fonts.github.io/Download.html>, lấy `ttf/DejaVuSans.ttf`
+(và file `LICENSE`) đặt vào `tools/release-assets/` rồi chạy `tools/make-release.ps1`; script sẽ đưa chúng vào gói.
+Font DejaVu © Bitstream, Inc. và các tác giả DejaVu, theo giấy phép đi kèm.
 
 ---
 
@@ -148,6 +170,9 @@ tại <https://dejavu-fonts.github.io/Download.html>, lấy file `ttf/DejaVuSans
 | **Xem bản dịch (N)** | Danh sách bản gốc (xám) và bản dịch (trắng) |
 | **Hiện box trên màn hình** | Hiện lại box của bản dịch gần nhất |
 | **Phím tắt** | Đổi tổ hợp phím: giữ 2-4 nút khoảng 1.5 giây để lưu, bấm riêng B để huỷ |
+| **Nền box** | Chỉnh độ trong suốt của box bản dịch: kéo thanh trượt trái/phải, có ô xem trước; thoát bằng B thì tự lưu vào `config.ini` |
+| **Provider** | Chọn provider (Gemini, Claude, ChatGPT, OpenRouter, API chuẩn OpenAI). Đổi provider sẽ đặt lại model về mặc định |
+| **Model** | Chọn model cho provider đang dùng (danh sách chọn sẵn ở trên); OpenRouter và API chuẩn OpenAI thì đặt model trong `config.ini` |
 | **Kiểm tra mạng** | Trạng thái Wi-Fi, IP và kết quả phân giải DNS tới server |
 | **Thoát overlay** | Tắt hẳn overlay, quay về menu Ultrahand |
 
@@ -173,7 +198,8 @@ tại <https://dejavu-fonts.github.io/Download.html>, lấy file `ttf/DejaVuSans
 - [x] Gửi ảnh qua HTTPS bằng libcurl (TLS của hệ thống, không cần CA bundle)
 - [x] Parse JSON kết quả (jansson)
 - [x] Tự bật overlay khi dịch xong
-- [x] Box dịch toàn màn hình: đen ~70%, chữ trắng, tự xuống dòng, co cỡ chữ theo box
+- [x] Box dịch toàn màn hình: nền đen, chữ trắng, tự xuống dòng, co cỡ chữ theo box
+- [x] Chỉnh độ trong suốt của box (mặc định 70%) bằng thanh trượt có xem trước, lưu vào `config.ini`
 - [x] Chạm hoặc bấm nút để ẩn, tự trả lại RAM framebuffer fullscreen
 - [x] Tự hạ độ phân giải framebuffer (1280x720 → 960x540 → 640x360) khi thiếu RAM
 - [x] Danh sách bản dịch với tự xuống dòng
@@ -287,15 +313,15 @@ Content-Type: image/jpeg
 
 Toạ độ tính theo pixel của ảnh gửi lên (ảnh chụp Switch là 1280x720).
 
-#### Tự chọn provider và API key theo từng request
+#### Provider, API key và model do người dùng gửi theo từng request
 
-Mặc định server dùng các provider và key cấu hình trong biến môi trường. Client cũng có thể mang **key của chính mình**
-bằng cách gửi thêm header, không cần sửa cấu hình server:
+Backend **chỉ dùng provider, API key và model mà mỗi request mang theo**, không dùng key nào của server (trừ khi chủ server
+bật `ALLOW_SERVER_PROVIDERS`, xem bên dưới). Request thiếu `x-provider` hoặc `x-api-key` sẽ nhận lỗi `400`.
 
 | Header | Mô tả |
 |---|---|
-| `x-provider` | `gemini`, `claude` (hoặc `anthropic`), `openai` (hoặc `gpt`), `openrouter`, `openai-compatible` |
-| `x-api-key` | API key của người dùng (bắt buộc khi có `x-provider`) |
+| `x-provider` | **Bắt buộc.** `gemini`, `claude` (hoặc `anthropic`), `openai` (hoặc `gpt`), `openrouter`, `openai-compatible` |
+| `x-api-key` | **Bắt buộc.** API key của người dùng |
 | `x-model` | Tên model. Có model mặc định với `gemini` (`gemini-3.5-flash-lite`), `claude` (`claude-opus-5-5`) và `openai` (`gpt-6-luna`); **bắt buộc** với `openrouter` và `openai-compatible` |
 | `x-base-url` | Chỉ dùng với `openai-compatible`: URL `https` công khai của API, thường kết thúc bằng `/v1` |
 
@@ -316,7 +342,7 @@ x-model: claude-sonnet-5-5
 Content-Type: image/jpeg
 ```
 
-- Khi có `x-provider`, request **chỉ dùng provider đó**, không fallback sang key của server.
+- Request **chỉ dùng provider đó**, không tự chuyển sang provider khác. Riêng `gemini`: nếu `x-model` khác mặc định thì khi model đó lỗi (503, timeout...) backend tự thử tiếp `gemini-3.5-flash-lite` **bằng cùng API key**; trường `provider` trong kết quả sẽ là `custom-gemini-fallback`. Khi mọi model đều lỗi thì trả `502 {"error":"Provider request failed","detail":"..."}` kèm lý do thật (ví dụ `HTTP 503`, `timeout`, `API key not valid`).
 - Vẫn cần `x-app-token` đúng. Key của người dùng chỉ đi qua request, không được lưu và bị che (`***`) khỏi thông báo lỗi.
 - Header sai trả `400` kèm lý do. `x-base-url` bị từ chối nếu không phải `https`, trỏ vào `localhost`, mạng nội bộ hoặc địa chỉ riêng.
 
@@ -325,6 +351,7 @@ Content-Type: image/jpeg
 | Biến | Bắt buộc | Mô tả |
 |---|---|---|
 | `APP_TOKEN` | ✅ | Chuỗi bí mật, Switch gửi qua `x-app-token` |
+| `ALLOW_SERVER_PROVIDERS` | | Đặt `true` để request không có `x-provider` chạy bằng các provider cấu hình bên dưới (chuỗi fallback). Mặc định **tắt**: các biến key bên dưới sẽ không được dùng |
 | `GEMINI_API_KEY` | | Key Gemini (dùng cho priority 1 và 2) |
 | `GEMINI_MODEL_PRIMARY` | | Mặc định `gemini-3.5-flash-lite` |
 | `GEMINI_MODEL_FALLBACK` | | Mặc định `gemini-3-flash-preview` |
@@ -334,7 +361,7 @@ Content-Type: image/jpeg
 | `PROVIDER_TIMEOUT_MS` | | Timeout mỗi provider, mặc định `12000` |
 | `TOTAL_TIMEOUT_MS` | | Tổng thời gian fallback, mặc định `25000` |
 
-Provider nào thiếu key/model sẽ tự bị bỏ qua. Mẫu: [`backend/.env.example`](backend/.env.example).
+Các biến `*_API_KEY` và `*_MODEL` chỉ có tác dụng khi bật `ALLOW_SERVER_PROVIDERS=true`; provider nào thiếu key/model sẽ tự bị bỏ qua. Mẫu: [`backend/.env.example`](backend/.env.example).
 
 ### Chạy local
 
@@ -363,7 +390,7 @@ netlify dev               # http://localhost:8888/api/translate
 ## Bảo mật
 
 - **Không commit** `backend/.env` và `config.ini` (đã có trong `.gitignore`).
-- Key AI chỉ nằm trên Netlify; Switch chỉ giữ `APP_TOKEN`. Request sai token bị chặn trước khi gọi AI.
+- Mặc định server **không giữ key AI nào**: key do bạn nhập trong `config.ini` trên thẻ SD và đi kèm mỗi request qua HTTPS, server không lưu. Request sai `APP_TOKEN` bị chặn trước khi gọi AI.
 - Nếu lỡ lộ key hoặc token: tạo key mới, cập nhật Netlify và `config.ini`.
 
 ## Ghi chú

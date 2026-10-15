@@ -131,6 +131,16 @@ export async function assertPublicHttpsUrl(raw: string): Promise<void> {
     throw new RequestError("x-base-url must be a public host");
 }
 
+/**
+ * Dãy provider thử theo thứ tự cho một request. Với Gemini chọn model khác mặc định thì thêm
+ * model mặc định (gemini-3.5-flash-lite) làm dự phòng, vẫn dùng cùng API key của người dùng.
+ */
+export function withGeminiFallback(config: ProviderConfig): ProviderConfig[] {
+  if (config.type !== "gemini" || config.model === DEFAULT_MODELS.gemini)
+    return [config];
+  return [config, { ...config, name: `${config.name}-fallback`, model: DEFAULT_MODELS.gemini, priority: config.priority + 1 }];
+}
+
 /** Xoá API key khỏi chuỗi trước khi trả về hoặc ghi log */
 export function redactSecret(text: string, secret: string | undefined): string {
   return secret ? text.split(secret).join("***") : text;

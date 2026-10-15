@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><link rel="stylesheet" href="guide.css">
+<style>
+  h1 { font-size: 56px; margin: 14px 0 6px; }
+  .sub { font-size: 30px; margin-bottom: 22px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .box { background: rgba(148,163,184,0.10); border: 1px solid rgba(148,163,184,0.22); border-radius: 20px; padding: 22px 26px; }
+  .box h3 { font-size: 33px; margin-bottom: 8px; color: #7dd3fc; }
+  .box p, .box li { font-size: 28px; line-height: 1.4; color: #dbe6f3; }
+  .box ul { padding-left: 26px; display: flex; flex-direction: column; gap: 6px; }
+  .full { margin-top: 20px; }
+  .note { font-size: 26px; padding: 20px 26px; }
+</style></head>
+<body><div class="card">
+  <header><span class="badge">BƯỚC 5 / 5</span><span class="app">CP-Translate</span></header>
+  <h1>Chỉnh trong app, xử lý lỗi</h1>
+  <p class="sub">Mở overlay Translate, mục <b>Cài đặt</b>:</p>
+
+  <div class="two">
+    <div class="box"><h3>Provider</h3><p>Gemini, Claude, ChatGPT, OpenRouter hoặc API chuẩn OpenAI. Đổi provider sẽ đặt lại model.</p></div>
+    <div class="box"><h3>Model</h3><p>Chọn model cho provider đang dùng. Mặc định <code>gemini-3.5-flash-lite</code>.</p></div>
+    <div class="box"><h3>Nền box</h3><p>Kéo thanh trượt chỉnh độ trong suốt, có ô xem trước. Bấm <span class="key">B</span> để lưu.</p></div>
+    <div class="box"><h3>Phím tắt</h3><p>Giữ tổ hợp 2 đến 4 nút mới khoảng 1,5 giây để lưu.</p></div>
+  </div>
+
+  <div class="box full"><h3>Gặp lỗi thì sao</h3>
+    <ul>
+      <li><b>Chưa đặt api_key</b>: điền key vào <code>config.ini</code> như bước 2</li>
+      <li><b>503 / timeout</b>: nhà cung cấp AI quá tải, thử lại sau ít phút</li>
+      <li><b>Chữ Việt hiện ô vuông</b>: thiếu <code>DejaVuSans.ttf</code> trong <code>config\translate</code></li>
+      <li><b>Couldn't resolve host</b>: kiểm tra Wi-Fi, dùng mục <b>Kiểm tra mạng</b></li>
+    </ul>
+  </div>
+
+  <div class="sp"></div>
+  <div class="note"><span class="warn">Lưu ý:</span> bật Wi-Fi khi chạy CFW có rủi ro với tài khoản Nintendo, nên dùng <b>emuMMC</b> và chặn các domain của Nintendo. Ảnh chụp màn hình được gửi qua server dịch vụ tới nhà cung cấp AI bạn chọn.</div>
+  <footer><span>CP-Translate v0.7 · mã nguồn mở</span><span>5 / 5</span></footer>
+</div></body></html>

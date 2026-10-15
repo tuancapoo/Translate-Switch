@@ -23,6 +23,11 @@ export interface ProviderConfig {
 
 export interface AppConfig {
   appToken?: string;
+  /**
+   * Cho phép request không kèm x-provider chạy bằng provider/key cấu hình trên server.
+   * Mặc định TẮT: mỗi request phải tự mang provider + API key (+ model) của người dùng.
+   */
+  allowServerProviders: boolean;
   /** Thời gian tối đa cho một provider trước khi chuyển sang provider sau */
   providerTimeoutMs: number;
   /** Tổng thời gian cho cả chuỗi fallback (phải nhỏ hơn giới hạn của Netlify Function) */
@@ -38,6 +43,7 @@ const toInt = (value: string | undefined, fallback: number) => {
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     appToken: env.APP_TOKEN,
+    allowServerProviders: env.ALLOW_SERVER_PROVIDERS === "true",
     providerTimeoutMs: toInt(env.PROVIDER_TIMEOUT_MS, 12_000),
     totalTimeoutMs: toInt(env.TOTAL_TIMEOUT_MS, 25_000),
     providers: [

@@ -10,13 +10,25 @@ token=
 # Ngôn ngữ đích (gửi lên server qua header x-target-lang)
 lang=Vietnamese
 
-# Provider và API key của riêng bạn (tuỳ chọn).
-# Có api_key thì overlay gửi kèm request và server dùng đúng key này, không dùng key của server.
-# Bỏ trống api_key thì server dùng cấu hình sẵn của nó.
-# Hiện hỗ trợ provider: gemini. model bỏ trống = model mặc định của provider.
+# Provider và API key của riêng bạn. api_key là BẮT BUỘC: server không giữ key nào, chỉ dùng key bạn gửi lên.
+#
+# provider: gemini | claude | openai | openrouter | openai-compatible
+#   gemini             model mặc định gemini-3.5-flash-lite (nếu chậm, thử model=gemini-3.1-flash-lite)
+#   claude             model mặc định claude-opus-5-5 (mạnh nhưng chậm/đắt; nhanh hơn: claude-sonnet-5-5, claude-haiku-4-5)
+#   openai             model mặc định gpt-6-luna
+#   openrouter         BẮT BUỘC đặt model (tên model của OpenRouter)
+#   openai-compatible  BẮT BUỘC đặt model và base_url (API chuẩn /v1/chat/completions, https công khai)
+# model bỏ trống = dùng model mặc định ở trên.
+# provider và model đổi được ngay trong overlay: Cài đặt > Provider / Model (đổi provider sẽ đặt lại model).
+# api_key thì phải sửa trong file này (overlay không có bàn phím).
 provider=gemini
 api_key=
-model=
+model=gemini-3.5-flash-lite
+# Chỉ dùng với provider=openai-compatible, ví dụ https://api.example.com/v1
+base_url=
+
+# Độ đậm nền box bản dịch, 0-100 (0 = trong suốt hoàn toàn, 100 = đặc). Đổi được trong overlay: Cài đặt > Nền box.
+box_opacity=70
 
 # Phím tắt chụp & dịch (2-4 nút). Đổi được ngay trong overlay: Cài đặt > Phím tắt.
 # Tên nút: L R ZL ZR SL SR A B X Y DUP DDOWN DLEFT DRIGHT LS RS PLUS MINUS

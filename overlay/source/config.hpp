@@ -26,4 +26,7 @@ namespace config {
     // Tổ hợp phím chụp & dịch mặc định khi overlay đang ẩn (đổi được trong overlay, lưu vào config.ini: hotkey=...)
     constexpr u64 DefaultHotkey = HidNpadButton_L | HidNpadButton_R | HidNpadButton_ZR;
 
+    // Độ đậm nền box bản dịch mặc định, % (0 = trong suốt hoàn toàn, 100 = đặc). Đổi được trong overlay (box_opacity=...)
+    constexpr int DefaultBoxOpacity = 70;
+
 }

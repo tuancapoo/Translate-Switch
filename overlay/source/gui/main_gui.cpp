@@ -1,12 +1,17 @@
 #include "gui/main_gui.hpp"
 
+#include "app/box_style.hpp"
 #include "app/hotkey.hpp"
+#include "app/provider_choice.hpp"
 #include "app/translate_service.hpp"
 #include "config.hpp"
 #include "core/providers.hpp"
 #include "core/settings.hpp"
 #include "gui/box_gui.hpp"
 #include "gui/hotkey_gui.hpp"
+#include "gui/model_gui.hpp"
+#include "gui/opacity_gui.hpp"
+#include "gui/provider_gui.hpp"
 #include "gui/result_gui.hpp"
 
 namespace {
@@ -19,16 +24,28 @@ namespace {
         return "Phím tắt: " + hotkey::toGlyphs(hotkey::get());
     }
 
-    /// Provider và key đang dùng, đọc từ config.ini (sửa file rồi mở lại overlay để cập nhật)
-    std::string providerLabel() {
-        std::string key = settings::readValue(config::SettingsPath, "api_key");
-        if (key.empty())
-            return "Provider: key của server";
+    std::string opacityLabel() {
+        return "Nền box: đặc " + std::to_string(box_style::opacityPercent()) + "%";
+    }
 
-        std::string provider = settings::readValue(config::SettingsPath, "provider");
-        if (provider.empty())
-            provider = "gemini";
-        return "Provider: " + provider + " · " + providers::maskKey(key);
+    std::string providerLabel() {
+        return "Provider: " + provider_choice::label(provider_choice::currentProvider());
+    }
+
+    std::string modelLabel() {
+        std::string provider = provider_choice::currentProvider();
+        std::string model = provider_choice::currentModel();
+        if (model.empty()) {
+            std::string def = provider_choice::defaultModel(provider);
+            return def.empty() ? "Model: chưa đặt (config.ini)" : "Model: " + def + " (mặc định)";
+        }
+        return "Model: " + model;
+    }
+
+    /// API key đang dùng, đọc từ config.ini (đặt key bằng cách sửa file, mở lại overlay để cập nhật)
+    std::string keyLabel() {
+        std::string key = settings::readValue(config::SettingsPath, "api_key");
+        return key.empty() ? "API key: chưa đặt (config.ini)" : "API key: " + providers::maskKey(key);
     }
 
 }
@@ -84,10 +101,39 @@ tsl::elm::Element* MainGui::createUI() {
     });
     list->addItem(m_hotkeyItem);
 
+    m_opacityItem = new tsl::elm::ListItem(opacityLabel(), "Đổi");
+    m_shownOpacityVersion = box_style::version();
+    m_opacityItem->setClickListener([](u64 keys) {
+        if (!(keys & HidNpadButton_A))
+            return false;
+        tsl::changeTo<OpacityGui>();
+        return true;
+    });
+    list->addItem(m_opacityItem);
+
+    m_providerItem = new tsl::elm::ListItem(providerLabel(), "Đổi");
+    m_providerItem->setClickListener([](u64 keys) {
+        if (!(keys & HidNpadButton_A))
+            return false;
+        tsl::changeTo<ProviderGui>();
+        return true;
+    });
+    list->addItem(m_providerItem);
+
+    m_modelItem = new tsl::elm::ListItem(modelLabel(), "Đổi");
+    m_shownChoiceVersion = provider_choice::version();
+    m_modelItem->setClickListener([](u64 keys) {
+        if (!(keys & HidNpadButton_A))
+            return false;
+        tsl::changeTo<ModelGui>();
+        return true;
+    });
+    list->addItem(m_modelItem);
+
     list->addItem(new tsl::elm::CategoryHeader("Thông tin"));
 
-    // Đặt provider và api_key trong config.ini (xem config.ini.example)
-    list->addItem(new tsl::elm::ListItem(providerLabel()));
+    // API key không nhập được trong overlay (không có bàn phím): đặt trong config.ini (xem config.ini.example)
+    list->addItem(new tsl::elm::ListItem(keyLabel()));
 
     auto diagnoseItem = new tsl::elm::ListItem("Kiểm tra mạng");
     diagnoseItem->setClickListener([](u64 keys) {
@@ -132,6 +178,19 @@ void MainGui::update() {
     if (hotkey::get() != m_shownHotkey) {
         m_shownHotkey = hotkey::get();
         m_hotkeyItem->setText(hotkeyLabel());
+    }
+
+    // Quay về từ màn hình chọn provider / model
+    if (provider_choice::version() != m_shownChoiceVersion) {
+        m_shownChoiceVersion = provider_choice::version();
+        m_providerItem->setText(providerLabel());
+        m_modelItem->setText(modelLabel());
+    }
+
+    // Quay về từ màn hình chỉnh độ trong suốt
+    if (box_style::version() != m_shownOpacityVersion) {
+        m_shownOpacityVersion = box_style::version();
+        m_opacityItem->setText(opacityLabel());
     }
 
     // Dịch xong trong lúc đang mở menu -> chuyển thẳng sang box

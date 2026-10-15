@@ -75,6 +75,8 @@ namespace settings {
                     result.apiKey = value;
                 else if (key == "model")
                     result.model = value;
+                else if (key == "base_url")
+                    result.baseUrl = value;
             }
         });
 
